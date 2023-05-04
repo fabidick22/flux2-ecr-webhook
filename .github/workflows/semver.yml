@@ -1,0 +1,36 @@
+name: Semver Workflow
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release:
+    if: contains(github.event.commits[0].message, 'chore(release)') == false
+    name: Release
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      DRY_RUN: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Release
+        id: release
+        uses: ridedott/release-me-action@v3
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          dry-run: ${{ env.DRY_RUN }}
+          release-branches: '["main"]'
+          release-rules-append: |
+            [
+              { "release": "patch", "type": "build" },
+              { "release": "patch", "type": "chore" },
+              { "release": "patch", "type": "ci" },
+              { "release": "patch", "type": "improvement" },
+              { "release": "patch", "type": "refactor" },
+              { "release": false, "subject": "*\\[skip release\\]*" }
+            ]
