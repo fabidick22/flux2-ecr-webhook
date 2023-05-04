@@ -3,11 +3,8 @@ import boto3
 import requests
 import os
 
-#ssm = boto3.client('ssm')
 secretsmanager = boto3.client('secretsmanager')
-#TOKEN_PARAMETER_NAME = os.environ['FLUX2_WEBHOOK_TOKEN_SSM_NAME']
 TOKEN_SECRET_NAME = os.environ['FLUX2_WEBHOOK_TOKEN_SECRET_NAME']
-#WEBHOOK_MAP_PARAMETER_NAME = os.environ['REPOS_MAPPING']
 WEBHOOK_MAP_SECRET_NAME = os.environ['REPOS_MAPPING']
 default_token = None
 webhook_map = None
@@ -25,8 +22,6 @@ def get_global_token():
 def get_webhook_map():
     global webhook_map
     if not webhook_map:
-        #response = ssm.get_parameter(Name=WEBHOOK_MAP_PARAMETER_NAME, WithDecryption=True)
-        #webhook_map = json.loads(response['Parameter']['Value'])
         response = secretsmanager.get_secret_value(SecretId=WEBHOOK_MAP_SECRET_NAME)
         webhook_map = json.loads(response['SecretString'])
     return webhook_map
