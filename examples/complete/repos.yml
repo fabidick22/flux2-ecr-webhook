@@ -1,0 +1,5 @@
+test-flux-repository:
+  webhook: "https://my.custom.domain.com/hook/c3fbe07883fa74c9eee0b83d2e0f0e1510c23d37c3fbe07883fa74c9eee0b83d2e0f0e151"
+my/custom-ecr-repository:
+  webhook: "https://my.custom.domain.com/hook/4954970f867720e73efb45e9f4fc5029e84ed4964954970f867720e73efb45e9f4fc5029e"
+  token: "a16b6438351d904f4789bdb8552df1debbf6aafc"
