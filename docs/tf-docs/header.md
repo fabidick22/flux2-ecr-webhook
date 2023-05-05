@@ -10,7 +10,7 @@ graph LR
   ECR[ECR] -->|Push event| CW[CloudWatch Event]
   CW -->|Trigger| SQS[SQS Queue]
   SQS -->|Trigger| L[Lambda Function]
-  L -->|Read parameters| SSM[SSM Parameter Store]
+  L -->|Read parameters| SM[Secret Management]
   L -->|Call webhook| F[Flux Receiver]
 ```
 
