@@ -1,3 +1,23 @@
+## [1.0.1](https://github.com/fabidick22/flux2-ecr-webhook/compare/v1.0.0...v1.0.1) (2023-05-05)
+
+### Chores
+
+- **lambda:** Set version to avoid conflict with breaking changes ([fe655dc](https://github.com/fabidick22/flux2-ecr-webhook/commit/fe655dc67ba70d7cddad1908cc3a63ad8eed0f43))
+
+### Code Refactoring
+
+- Add 'repo_mapping' variable, useful if you don't want to use a YAML file ([fc95b54](https://github.com/fabidick22/flux2-ecr-webhook/commit/fc95b5466367804f5282480c4efd567a425d83f2))
+
+### Documentation
+
+- Update diagram ([dfdea2a](https://github.com/fabidick22/flux2-ecr-webhook/commit/dfdea2a8081774d96ebe045fa87087810ba4111c))
+
+### Other
+
+- Merge pull request #2 from fabidick22/update-workflow ([79efe28](https://github.com/fabidick22/flux2-ecr-webhook/commit/79efe28c4a32918d44e9b9df557a5fb61eb0ab15)), closes [#2](https://github.com/fabidick22/flux2-ecr-webhook/issues/2)
+- Update semver.yml ([1f43006](https://github.com/fabidick22/flux2-ecr-webhook/commit/1f43006443e510bea8963bef87a12cd5532b5515))
+- Merge pull request #1 from fabidick22/refactor-repo-mapping ([1c7e9ef](https://github.com/fabidick22/flux2-ecr-webhook/commit/1c7e9ef3d0e85581ebc902657b2c61223bbbc017)), closes [#1](https://github.com/fabidick22/flux2-ecr-webhook/issues/1)
+
 # 1.0.0 (2023-05-04)
 
 ### Code Style
