@@ -10,7 +10,7 @@ graph LR
   ECR[ECR] -->|Push event| CW[CloudWatch Event]
   CW -->|Trigger| SQS[SQS Queue]
   SQS -->|Trigger| L[Lambda Function]
-  L -->|Read parameters| SSM[SSM Parameter Store]
+  L -->|Read parameters| SM[Secret Management]
   L -->|Call webhook| F[Flux Receiver]
 ```
 
@@ -63,7 +63,8 @@ graph LR
 |------|-------------|------|---------|:--------:|
 | <a name="input_app_name"></a> [app\_name](#input\_app\_name) | Name used for resources to create. | `string` | `"flux2-ecr-webhook"` | no |
 | <a name="input_cw_logs_retention"></a> [cw\_logs\_retention](#input\_cw\_logs\_retention) | Specifies the number of days you want to retain log events in the specified log group. | `number` | `14` | no |
-| <a name="input_repo_mapping_file"></a> [repo\_mapping\_file](#input\_repo\_mapping\_file) | YAML file path with repository mapping. | `string` | n/a | yes |
+| <a name="input_repo_mapping"></a> [repo\_mapping](#input\_repo\_mapping) | Object with repository mapping, if this variable is set `repo_mapping_file` will be ignored. | `any` | `null` | no |
+| <a name="input_repo_mapping_file"></a> [repo\_mapping\_file](#input\_repo\_mapping\_file) | YAML file path with repository mapping. | `string` | `""` | no |
 | <a name="input_webhook_token"></a> [webhook\_token](#input\_webhook\_token) | Webhook token used to call the Flux receiver. | `string` | `null` | no |
 
 ## Outputs
