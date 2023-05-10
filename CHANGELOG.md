@@ -1,3 +1,9 @@
+## [1.0.2](https://github.com/fabidick22/flux2-ecr-webhook/compare/v1.0.1...v1.0.2) (2023-05-10)
+
+### Documentation
+
+- **terraform:** Update var description and examples (#3) ([11ca639](https://github.com/fabidick22/flux2-ecr-webhook/commit/11ca639e20c4c7f64792811711d805918fbe5cd6)), closes [#3](https://github.com/fabidick22/flux2-ecr-webhook/issues/3)
+
 ## [1.0.1](https://github.com/fabidick22/flux2-ecr-webhook/compare/v1.0.0...v1.0.1) (2023-05-05)
 
 ### Chores
