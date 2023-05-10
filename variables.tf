@@ -11,13 +11,31 @@ variable "repo_mapping_file" {
 }
 
 variable "repo_mapping" {
-  description = "Object with repository mapping, if this variable is set `repo_mapping_file` will be ignored."
   type        = any
   default     = null
+  sensitive   = true
+  #description = "Object with repository mapping, if this variable is set `repo_mapping_file` will be ignored."
+  description = <<EOT
+Object with repository mapping, if this variable is set `repo_mapping_file` will be ignored.
+**Example:**
+
+```
+{
+  ecr-repo-name = {
+    webhook = "https://gitops.domain.com/hook/111111 "
+  }
+  test/ecr-repo-name = {
+    webhook = "https://gitops.domain.com/hook/111111 "
+    token = "webhook-token "
+  }
+}
+```
+
+EOT
 }
 
 variable "webhook_token" {
-  description = "Webhook token used to call the Flux receiver."
+  description = "Webhook default token used to call the Flux receiver. If it doesn't find a `token` attribute in the repository mapping use this token for the webhooks"
   type        = string
   sensitive   = true
   default     = null
