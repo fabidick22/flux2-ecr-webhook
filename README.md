@@ -20,6 +20,45 @@ graph LR
 - Add support to lambda with VPC (for internal webhook)
 - Add support to multiple webhooks
 
+## Usage
+To use this Terraform module, you must first have created webhooks for each [ImageRepository](https://fluxcd.io/flux/components/image/imagerepositories/) resource in your cluster.
+
+For example, if you have an `ImageRepository` named `my-ecr-repo-ir`, you should create a [Receiver](https://fluxcd.io/flux/components/notification/receiver/) resource to create a webhook that can be called.
+This webhook will then be used in our input variable named `repo_mapping`.
+> **Note**: Only `generic` type receiver is supported.
+
+```yaml
+---
+apiVersion: notification.toolkit.fluxcd.io/v1beta2
+kind: Receiver
+metadata:
+  name: my-ecr-repo-receiver
+  namespace: flux-system
+spec:
+  type: generic
+  secretRef:
+    name: webhook-token
+  resources:
+    - kind: ImageRepository
+      name: my-ecr-repo-ir
+```
+The webhook created by the `Receiver` resource has to be configured in the module, for example:
+```hcl
+module "flux2-ecr-webhook" {
+  source = "github.com/fabidick22/flux2-ecr-webhook?ref=v1.0.2"
+
+  ...
+  repo_mapping = {
+    my-ecr-repo = {
+      webhook = "https://custom.domain.com/hook/11111111"
+    }
+  }
+  ...
+}
+```
+## Example
+- [Complete](https://github.com/fabidick22/flux2-ecr-webhook/tree/main/examples/complete)
+
 ## Requirements
 
 | Name | Version |
@@ -63,9 +102,9 @@ graph LR
 |------|-------------|------|---------|:--------:|
 | <a name="input_app_name"></a> [app\_name](#input\_app\_name) | Name used for resources to create. | `string` | `"flux2-ecr-webhook"` | no |
 | <a name="input_cw_logs_retention"></a> [cw\_logs\_retention](#input\_cw\_logs\_retention) | Specifies the number of days you want to retain log events in the specified log group. | `number` | `14` | no |
-| <a name="input_repo_mapping"></a> [repo\_mapping](#input\_repo\_mapping) | Object with repository mapping, if this variable is set `repo_mapping_file` will be ignored. | `any` | `null` | no |
+| <a name="input_repo_mapping"></a> [repo\_mapping](#input\_repo\_mapping) | Object with repository mapping, if this variable is set `repo_mapping_file` will be ignored.<br>**Example:**<pre>{<br>  ecr-repo-name = {<br>    webhook = "https://gitops.domain.com/hook/111111 "<br>  }<br>  test/ecr-repo-name = {<br>    webhook = "https://gitops.domain.com/hook/111111 "<br>    token = "webhook-token "<br>  }<br>}</pre> | `any` | `null` | no |
 | <a name="input_repo_mapping_file"></a> [repo\_mapping\_file](#input\_repo\_mapping\_file) | YAML file path with repository mapping. | `string` | `""` | no |
-| <a name="input_webhook_token"></a> [webhook\_token](#input\_webhook\_token) | Webhook token used to call the Flux receiver. | `string` | `null` | no |
+| <a name="input_webhook_token"></a> [webhook\_token](#input\_webhook\_token) | Webhook default token used to call the Flux receiver. If it doesn't find a `token` attribute in the repository mapping use this token for the webhooks | `string` | `null` | no |
 
 ## Outputs
 

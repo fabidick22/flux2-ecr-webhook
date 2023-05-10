@@ -2,8 +2,39 @@
 module "flux2-ecr-webhook" {
   source = "../../"
 
-  repo_mapping_file = "repos.yml"
   app_name          = "flux2-ecr-webhook"
-  webhook_token     = "420a1600df316540afe3391c740c0d24ea6e9922"
+  repo_mapping_file = "repos.yml" # Deprecated
+  webhook_token     = "WEBHOOK-TOKEN" # Keep this token safe, you can use sops (mozilla/sops).
   cw_logs_retention = 7
+}
+
+module "flux2-ecr-webhook2" {
+  source = "../../"
+
+  app_name = "flux2-ecr-webhook2"
+  repo_mapping = {
+    test/my-ecr-repo = {
+      webhook = "https://gitops.domain.com/hook/11111111111"
+    }
+  }
+  webhook_token = "WEBHOOK-TOKEN" # Keep this token safe, you can use sops (mozilla/sops).
+}
+
+module "flux2-ecr-webhook3" {
+  source = "../../"
+
+  app_name = "flux2-ecr-webhook3"
+  repo_mapping = {
+    my-ecr-repo = {
+      webhook = "https://gitops.domain.com/hook/11111111111"
+      token = "WEBHOOK-TOKEN" # Keep this token safe, you can use sops (mozilla/sops).
+    }
+    my-ecr-repo2 = {
+      webhook = "https://gitops.domain.com/hook/11111111111"
+    }
+    my-ecr-repo3 = {
+      webhook = "https://gitops.domain.com/hook/11111111111"
+    }
+  }
+  webhook_token = "WEBHOOK-TOKEN" # Keep this token safe, you can use sops (mozilla/sops).
 }
