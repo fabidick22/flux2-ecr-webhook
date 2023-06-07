@@ -40,21 +40,9 @@ def process_ecr_push_event(detail):
     }))
 
 
-def call_flux_webhook(repository):
-    # Retrieve the map of values from Secrets Manager
-    webhook_map = get_webhook_map()
-
-    # Find the webhook endpoint corresponding to the event repository
-    webhook_url = None
-    token = None
-    if repository in webhook_map:
-        repo_data = webhook_map[repository]
-        webhook_url = repo_data.get('webhook')
-        token = repo_data.get('token', get_global_token())
-
+def make_requests(webhook_url, repository, headers):
     # Call the Flux webhook with the token and corresponding endpoint
     if webhook_url:
-        headers = {'Authorization': f'Bearer {token}'}
         response = session.post(webhook_url, headers=headers)
         print(json.dumps({
             'message': 'Webhook response',
@@ -65,6 +53,23 @@ def call_flux_webhook(repository):
             'message': 'No webhook endpoint found for repository',
             'repository': repository
         }))
+
+def call_flux_webhook(repository):
+    # Retrieve the map of values from Secrets Manager
+    webhook_map = get_webhook_map()
+
+    # Find the webhook endpoint corresponding to the event repository
+    webhook_url = None
+    token = None
+    if repository in webhook_map:
+        repo_data = webhook_map[repository]
+        webhook_urls = repo_data.get('webhook')
+        token = repo_data.get('token', get_global_token())
+        for webhook in webhook_urls:
+            headers = {'Authorization': f'Bearer {token}'}
+            make_requests(webhook, repository, headers)
+
+
 
 
 def lambda_handler(event, context):
