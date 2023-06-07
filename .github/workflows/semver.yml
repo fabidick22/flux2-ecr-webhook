@@ -28,12 +28,12 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           dry-run: ${{ env.DRY_RUN }}
-          release-branches: '["main"]'
+          release-branches: "['+([0-9])?(.{+([0-9]),x}).x','main','next','next-major',{name:'beta',prerelease:true},{name:'alpha',prerelease:true}]"
           release-rules-append: |
             [
               { "release": "patch", "type": "build" },
               { "release": "patch", "type": "chore" },
-              { "release": "patch", "type": "ci" },
+              { "release": false, "type": "ci" },
               { "release": "patch", "type": "improvement" },
               { "release": "patch", "type": "refactor" },
               { "release": false, "subject": "*\\[skip release\\]*" }
