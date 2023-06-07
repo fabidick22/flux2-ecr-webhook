@@ -1,3 +1,15 @@
+# [1.1.0-beta.1](https://github.com/fabidick22/flux2-ecr-webhook/compare/v1.0.2...v1.1.0-beta.1) (2023-06-07)
+
+### Continuous Integration
+
+- Fix string format (#5) ([f96cd07](https://github.com/fabidick22/flux2-ecr-webhook/commit/f96cd07cd6105b4bf53cfaaebed9854a28489a50)), closes [#5](https://github.com/fabidick22/flux2-ecr-webhook/issues/5)
+- Refactor semver workflow (#4) ([37134da](https://github.com/fabidick22/flux2-ecr-webhook/commit/37134daa58edc20c5db6749be79674aac4fa3018)), closes [#4](https://github.com/fabidick22/flux2-ecr-webhook/issues/4)
+- Update trigger branch ([6dc64a6](https://github.com/fabidick22/flux2-ecr-webhook/commit/6dc64a66f54b1de44c6e3068246df02324818664))
+
+### Features
+
+- Add support for multiple webhooks \n\n BREAKING CHANGE: Change data structure of repo_mapping attribute ([e28764a](https://github.com/fabidick22/flux2-ecr-webhook/commit/e28764af57c6514347688e44081900ad60aa9723))
+
 ## [1.0.2](https://github.com/fabidick22/flux2-ecr-webhook/compare/v1.0.1...v1.0.2) (2023-05-10)
 
 ### Documentation
