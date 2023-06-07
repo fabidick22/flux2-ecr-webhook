@@ -33,7 +33,7 @@ jobs:
             [
               { "release": "patch", "type": "build" },
               { "release": "patch", "type": "chore" },
-              { "release": "patch", "type": "ci" },
+              { "release": false, "type": "ci" },
               { "release": "patch", "type": "improvement" },
               { "release": "patch", "type": "refactor" },
               { "release": false, "subject": "*\\[skip release\\]*" }
