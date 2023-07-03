@@ -18,7 +18,6 @@ graph LR
 - Add unit tests
 - Add support for [generic-hmac](https://fluxcd.io/flux/components/notification/receiver/#generic-hmac)
 - Add support to lambda with VPC (for internal webhook)
-- Add support to multiple webhooks
 
 ## Usage
 To use this Terraform module, you must first have created webhooks for each [ImageRepository](https://fluxcd.io/flux/components/image/imagerepositories/) resource in your cluster. 
@@ -50,7 +49,7 @@ module "flux2-ecr-webhook" {
   ...
   repo_mapping = {
     my-ecr-repo = {
-      webhook = "https://custom.domain.com/hook/11111111"
+      webhook = ["https://custom.domain.com/hook/11111111", "https://custom.domain.com/hook/2222222"]
     }
   }
   ...
