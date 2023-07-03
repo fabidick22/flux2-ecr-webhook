@@ -22,10 +22,10 @@ Object with repository mapping, if this variable is set `repo_mapping_file` will
 ```
 {
   ecr-repo-name = {
-    webhook = "https://gitops.domain.com/hook/111111 "
+    webhook = ["https://gitops.domain.com/hook/111111" ]
   }
   test/ecr-repo-name = {
-    webhook = "https://gitops.domain.com/hook/111111 "
+    webhook = ["https://gitops.domain.com/hook/111111", "https://gitops.domain.com/hook/222222" ]
     token = "webhook-token "
   }
 }
