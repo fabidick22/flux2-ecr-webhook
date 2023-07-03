@@ -1,3 +1,9 @@
+# [1.1.0-beta.2](https://github.com/fabidick22/flux2-ecr-webhook/compare/v1.1.0-beta.1...v1.1.0-beta.2) (2023-07-03)
+
+### Documentation
+
+- Add support for multiple webhooks ([c922986](https://github.com/fabidick22/flux2-ecr-webhook/commit/c9229863292034106c43915a4592c2b1f534d8b2))
+
 # [1.1.0-beta.1](https://github.com/fabidick22/flux2-ecr-webhook/compare/v1.0.2...v1.1.0-beta.1) (2023-06-07)
 
 ### Continuous Integration
