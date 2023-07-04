@@ -1,3 +1,15 @@
+# [1.1.0](https://github.com/fabidick22/flux2-ecr-webhook/compare/v1.0.2...v1.1.0) (2023-07-04)
+
+### Continuous Integration
+
+- Delete job condition (#7) ([f3c4067](https://github.com/fabidick22/flux2-ecr-webhook/commit/f3c406728c37b1fb05ca6e41cf0c0b4ca4d99904)), closes [#7](https://github.com/fabidick22/flux2-ecr-webhook/issues/7)
+- Fix string format (#5) ([f96cd07](https://github.com/fabidick22/flux2-ecr-webhook/commit/f96cd07cd6105b4bf53cfaaebed9854a28489a50)), closes [#5](https://github.com/fabidick22/flux2-ecr-webhook/issues/5)
+- Refactor semver workflow (#4) ([37134da](https://github.com/fabidick22/flux2-ecr-webhook/commit/37134daa58edc20c5db6749be79674aac4fa3018)), closes [#4](https://github.com/fabidick22/flux2-ecr-webhook/issues/4)
+
+### Features
+
+- Add support for multiple webhooks (#6) ([1054bb3](https://github.com/fabidick22/flux2-ecr-webhook/commit/1054bb33c7f367163ecc3b00f8088b781cb1e5a9)), closes [#6](https://github.com/fabidick22/flux2-ecr-webhook/issues/6)
+
 # [1.1.0-beta.2](https://github.com/fabidick22/flux2-ecr-webhook/compare/v1.1.0-beta.1...v1.1.0-beta.2) (2023-07-03)
 
 ### Documentation
