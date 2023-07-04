@@ -2,7 +2,6 @@ import json
 import boto3
 import requests
 import os
-import re
 
 secretsmanager = boto3.client('secretsmanager')
 TOKEN_SECRET_NAME = os.environ['FLUX2_WEBHOOK_TOKEN_SECRET_NAME']
@@ -55,8 +54,7 @@ def make_requests(webhook_url, repository, headers):
             'repository': repository
         }))
 
-
-def call_flux_webhook(repository, image_tag):
+def call_flux_webhook(repository):
     # Retrieve the map of values from Secrets Manager
     webhook_map = get_webhook_map()
 
@@ -67,11 +65,11 @@ def call_flux_webhook(repository, image_tag):
         repo_data = webhook_map[repository]
         webhook_urls = repo_data.get('webhook')
         token = repo_data.get('token', get_global_token())
-        regex = repo_data.get('regex', '.*')
         for webhook in webhook_urls:
             headers = {'Authorization': f'Bearer {token}'}
-            if regex and re.match(regex, image_tag):  # Verificar si el tag cumple con la expresión regular
-                make_requests(webhook, repository, headers)
+            make_requests(webhook, repository, headers)
+
+
 
 
 def lambda_handler(event, context):
@@ -84,7 +82,7 @@ def lambda_handler(event, context):
     process_ecr_push_event(detail)
 
     # Call the Flux webhook with the event repository
-    call_flux_webhook(detail['repository-name'], detail['image-tag'])
+    call_flux_webhook(detail['repository-name'])
 
     return {
         'statusCode': 200,
