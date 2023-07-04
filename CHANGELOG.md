@@ -1,3 +1,13 @@
+## [1.1.1](https://github.com/fabidick22/flux2-ecr-webhook/compare/v1.1.0...v1.1.1) (2023-07-04)
+
+### Continuous Integration
+
+- Update trigger branchs (#8) ([8d2b843](https://github.com/fabidick22/flux2-ecr-webhook/commit/8d2b843603409d66f5aff1549997d89063f88c46)), closes [#8](https://github.com/fabidick22/flux2-ecr-webhook/issues/8)
+
+### Documentation
+
+- Update TODO list ([cce4b51](https://github.com/fabidick22/flux2-ecr-webhook/commit/cce4b51289a8ee944022cbf8fadd61df6791b13d))
+
 ## [1.2.1](https://github.com/fabidick22/flux2-ecr-webhook/compare/v1.2.0...v1.2.1) (2023-07-04)
 
 ### Other
