@@ -1,3 +1,13 @@
+# [1.2.0](https://github.com/fabidick22/flux2-ecr-webhook/compare/v1.1.0...v1.2.0) (2023-07-04)
+
+### Continuous Integration
+
+- Update triggers ([b1f6394](https://github.com/fabidick22/flux2-ecr-webhook/commit/b1f63942ea2d3e4b7174b4980aac7479131ac0e5))
+
+### Features
+
+- Add support regex attribute ([6c74c62](https://github.com/fabidick22/flux2-ecr-webhook/commit/6c74c62a657d85ed2f1ed58eabe55dfb1bb44623))
+
 # [1.1.0](https://github.com/fabidick22/flux2-ecr-webhook/compare/v1.0.2...v1.1.0) (2023-07-04)
 
 ### Continuous Integration
