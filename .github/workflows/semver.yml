@@ -6,6 +6,8 @@ on:
       - main
       - beta
       - alpha
+      - next
+      - next-major
 
 jobs:
   release:
