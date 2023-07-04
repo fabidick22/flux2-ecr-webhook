@@ -1,3 +1,9 @@
+## [1.2.1](https://github.com/fabidick22/flux2-ecr-webhook/compare/v1.2.0...v1.2.1) (2023-07-04)
+
+### Other
+
+- Revert "feat: Add support regex attribute" ([c96e9fe](https://github.com/fabidick22/flux2-ecr-webhook/commit/c96e9fe20e98aadaaa44ab1a061bb82d986ef527))
+
 # [1.2.0](https://github.com/fabidick22/flux2-ecr-webhook/compare/v1.1.0...v1.2.0) (2023-07-04)
 
 ### Continuous Integration
