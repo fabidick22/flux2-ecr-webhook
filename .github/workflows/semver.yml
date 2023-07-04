@@ -9,7 +9,6 @@ on:
 
 jobs:
   release:
-    if: contains(github.event.commits[0].message, 'chore(release)') == false
     name: Release
     runs-on: ubuntu-latest
     permissions:
