@@ -73,6 +73,11 @@ def call_flux_webhook(repository, image_tag):
                 headers = {'Authorization': f'Bearer {token}'}
                 if regex and re.match(regex, image_tag):
                     make_requests(webhook, repository, headers)
+                else:
+                    print(json.dumps({
+                        'message': f'The {image_tag} tag does not match the regular expresion ({regex})',
+                        'repository': repository
+                    }))
 
 
 def lambda_handler(event, context):
