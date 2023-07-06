@@ -1,3 +1,9 @@
+# [1.2.0-alpha.2](https://github.com/fabidick22/flux2-ecr-webhook/compare/v1.2.0-alpha.1...v1.2.0-alpha.2) (2023-07-06)
+
+### Code Refactoring
+
+- Add info logs ([2602f32](https://github.com/fabidick22/flux2-ecr-webhook/commit/2602f3275c3ba3fa7b057c38cb7ea625777f47a3))
+
 # [1.2.0-alpha.1](https://github.com/fabidick22/flux2-ecr-webhook/compare/v1.1.0...v1.2.0-alpha.1) (2023-07-05)
 
 ### Chores
