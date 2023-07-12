@@ -14,22 +14,15 @@ variable "repo_mapping" {
   type        = any
   default     = null
   sensitive   = true
-  #description = "Object with repository mapping, if this variable is set `repo_mapping_file` will be ignored."
   description = <<EOT
 Object with repository mapping, if this variable is set `repo_mapping_file` will be ignored.
-**Example:**
 
-```
-{
-  ecr-repo-name = {
-    webhook = ["https://gitops.domain.com/hook/111111" ]
-  }
-  test/ecr-repo-name = {
-    webhook = ["https://gitops.domain.com/hook/111111", "https://gitops.domain.com/hook/222222" ]
-    token = "webhook-token "
-  }
-}
-```
+**Available Attributes:**
+- `<ECR>`: ECR resource name.
+- `<ECR>.<ID>`: Unique name for webhooks.
+- `<ECR>.<ID>.webhook`: Webhook list.
+- `<ECR>.<ID>.token` (Optional): Token used for webhooks, if set, then "webhook_token" will be ignored.
+- `<ECR>.<ID>.regex` (Optional): Regular expression that is applied to the image tag
 
 EOT
 }

@@ -1,3 +1,33 @@
+# [1.2.0-alpha.3](https://github.com/fabidick22/flux2-ecr-webhook/compare/v1.2.0-alpha.2...v1.2.0-alpha.3) (2023-07-12)
+
+### Documentation
+
+- Update docs about refactoring the repo_mapping variable ([ffc4f5c](https://github.com/fabidick22/flux2-ecr-webhook/commit/ffc4f5cf4a1b4be4b593b9a34742e0c9d863b2e2))
+
+# [1.2.0-alpha.2](https://github.com/fabidick22/flux2-ecr-webhook/compare/v1.2.0-alpha.1...v1.2.0-alpha.2) (2023-07-06)
+
+### Code Refactoring
+
+- Add info logs ([2602f32](https://github.com/fabidick22/flux2-ecr-webhook/commit/2602f3275c3ba3fa7b057c38cb7ea625777f47a3))
+
+# [1.2.0-alpha.1](https://github.com/fabidick22/flux2-ecr-webhook/compare/v1.1.0...v1.2.0-alpha.1) (2023-07-05)
+
+### Chores
+
+- **release:** v1.1.1 ([b101b29](https://github.com/fabidick22/flux2-ecr-webhook/commit/b101b29a74b192f0aeb2347fd761ff7b26b78ef5))
+
+### Continuous Integration
+
+- Update trigger branchs (#8) ([8d2b843](https://github.com/fabidick22/flux2-ecr-webhook/commit/8d2b843603409d66f5aff1549997d89063f88c46)), closes [#8](https://github.com/fabidick22/flux2-ecr-webhook/issues/8)
+
+### Documentation
+
+- Update TODO list (#9) ([1df3d43](https://github.com/fabidick22/flux2-ecr-webhook/commit/1df3d4380852c25ceb4648ea2eeddafe105f4df7)), closes [#9](https://github.com/fabidick22/flux2-ecr-webhook/issues/9)
+
+### Features
+
+- Add support for a regex parameter \n\n BREAKING CHANGE: Update repo_mapping variable to support the regex attribute ([4f165d0](https://github.com/fabidick22/flux2-ecr-webhook/commit/4f165d041333ca8e2f9b0df49adaa3bf7ba0dc1f))
+
 ## [1.1.1](https://github.com/fabidick22/flux2-ecr-webhook/compare/v1.1.0...v1.1.1) (2023-07-04)
 
 ### Continuous Integration

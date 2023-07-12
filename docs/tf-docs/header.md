@@ -42,17 +42,28 @@ spec:
       name: my-ecr-repo-ir
 ```
 The webhook created by the `Receiver` resource has to be configured in the module, for example:
+> **Note**: Let's assume that our ECR repository is called `my-ecr-repo`.
+
 ```hcl
 module "flux2-ecr-webhook" {
-  source = "github.com/fabidick22/flux2-ecr-webhook?ref=v1.0.2"
+  source = "github.com/fabidick22/flux2-ecr-webhook?ref=v1.2.0"
 
-  ...
+  app_name = "flux-ecr-webhook"
+
   repo_mapping = {
-    my-ecr-repo = {
-      webhook = ["https://custom.domain.com/hook/11111111", "https://custom.domain.com/hook/2222222"]
+    my-ecr-repo = {                                    # ECR resource name
+      prod = {
+        webhook = ["https://domain.com/hook/1111111"]  # URL created by the Receiver
+        regex   = "prod-(?P<version>.*)"               # Regex for ECR image tag
+      }
+      stg = {
+        webhook = ["https://domain.com/hook/2222222"]  # URL created by the Receiver
+        regex   = "stg-(?P<version>.*)"                # Regex for ECR image tag
+      }
     }
   }
-  ...
+
+  webhook_token = "var.webhook_token"
 }
 ```
 ## Example
