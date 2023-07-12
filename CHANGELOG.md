@@ -1,3 +1,9 @@
+# [1.2.0-alpha.3](https://github.com/fabidick22/flux2-ecr-webhook/compare/v1.2.0-alpha.2...v1.2.0-alpha.3) (2023-07-12)
+
+### Documentation
+
+- Update docs about refactoring the repo_mapping variable ([ffc4f5c](https://github.com/fabidick22/flux2-ecr-webhook/commit/ffc4f5cf4a1b4be4b593b9a34742e0c9d863b2e2))
+
 # [1.2.0-alpha.2](https://github.com/fabidick22/flux2-ecr-webhook/compare/v1.2.0-alpha.1...v1.2.0-alpha.2) (2023-07-06)
 
 ### Code Refactoring
