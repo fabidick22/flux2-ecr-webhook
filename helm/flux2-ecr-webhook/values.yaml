@@ -1,0 +1,105 @@
+# -- Number of controller replicas. Use 1 unless leaderElection is enabled.
+replicaCount: 1
+
+image:
+  repository: ghcr.io/fabidick22/flux2-ecr-webhook
+  pullPolicy: IfNotPresent
+  # -- Overrides the image tag. Defaults to the chart's appVersion.
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # -- Create a ServiceAccount for the controller.
+  create: true
+  # -- Annotations added to the ServiceAccount.
+  # Use this to configure IRSA (IAM Roles for Service Accounts):
+  # annotations:
+  #   eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/my-role
+  annotations: {}
+  # -- Override the generated ServiceAccount name.
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 65532
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 128Mi
+  requests:
+    cpu: 10m
+    memory: 64Mi
+
+# -- Flux configuration.
+flux:
+  # -- Namespace where Flux is installed. The controller will look for
+  # ImageRepository, ImagePolicy and Receiver resources here.
+  namespace: flux-system
+
+# -- Namespace scanning configuration.
+scan:
+  # -- Scan all namespaces for HelmRelease resources. When true,
+  # includeNamespaces is ignored.
+  allNamespaces: true
+  # -- Scan only these namespaces (used when allNamespaces is false).
+  includeNamespaces: []
+  # -- Never scan these namespaces, even when allNamespaces is true.
+  excludeNamespaces:
+    - kube-system
+    - kube-public
+    - kube-node-lease
+
+# -- Controller behaviour.
+controller:
+  # -- How often to resync even without Kubernetes watch events.
+  # Accepts Go duration strings: 5m, 10m, 1h.
+  resyncInterval: 5m
+  # -- Enable leader election. Recommended when replicaCount > 1.
+  leaderElection: false
+
+# -- AWS configuration.
+aws:
+  # -- AWS region where resources are managed (e.g. us-east-1).
+  region: ""
+  # -- IAM Role ARN for IRSA. Recommended over static credentials.
+  # Leave empty if using node instance profile or kube2iam.
+  irsaRoleArn: ""
+  resources:
+    lambda:
+      # -- Lambda function name to create/update.
+      name: flux2-ecr-webhook
+      # -- Lambda runtime. Update when upgrading the Python version.
+      runtime: python3.12
+      # -- Lambda execution timeout in seconds.
+      timeout: 30
+    sqs:
+      # -- SQS queue name for buffering ECR push events.
+      name: flux2-ecr-webhook-push-events
+    # -- Prefix used for SecretsManager and CloudWatch resource names.
+    appName: flux2-ecr-webhook
+
+# -- Annotation key placed on an ImageRepository to exclude it from
+# being managed by the controller. Value must be "true".
+# Example:
+#   annotations:
+#     ecr-webhook.io/skip: "true"
+excludeAnnotation: "ecr-webhook.io/skip"
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
