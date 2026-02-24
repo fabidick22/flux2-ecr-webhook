@@ -15,6 +15,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 
+	"github.com/fabidick22/flux2-ecr-webhook/internal/config"
 	"github.com/fabidick22/flux2-ecr-webhook/internal/controller"
 )
 
@@ -38,14 +39,29 @@ func main() {
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "Address the metrics endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "Address the health probe endpoint binds to.")
 	flag.BoolVar(&leaderElect, "leader-elect", false, "Enable leader election (recommended for multi-replica setups).")
-	flag.DurationVar(&resyncInterval, "resync-interval", 5*time.Minute, "How often to reconcile even without Kubernetes events.")
+	flag.DurationVar(&resyncInterval, "resync-interval", 0, "Periodic resync interval (overrides RESYNC_INTERVAL env var when set).")
 	flag.Parse()
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&zap.Options{})))
 
-	cfg := ctrl.GetConfigOrDie()
+	// Load all other configuration from env vars injected by the Helm ConfigMap.
+	cfg := config.FromEnv()
 
-	mgr, err := ctrl.NewManager(cfg, ctrl.Options{
+	// --resync-interval flag overrides the env var when explicitly provided.
+	effectiveResync := cfg.ResyncDuration()
+	if resyncInterval > 0 {
+		effectiveResync = resyncInterval
+	}
+
+	setupLog.Info("starting flux2-ecr-webhook controller",
+		"fluxNamespace", cfg.FluxNamespace,
+		"webhookBaseURL", cfg.WebhookBaseURL,
+		"scanAllNamespaces", cfg.ScanAllNamespaces,
+		"excludeNamespaces", cfg.ExcludeNamespaces,
+		"resyncInterval", effectiveResync,
+	)
+
+	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme: scheme,
 		Metrics: metricsserver.Options{
 			BindAddress: metricsAddr,
@@ -61,8 +77,8 @@ func main() {
 
 	if err = (&controller.ImageRepositorySyncReconciler{
 		Client:         mgr.GetClient(),
-		Scheme:         mgr.GetScheme(),
-		ResyncInterval: resyncInterval,
+		Config:         cfg,
+		ResyncInterval: effectiveResync,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ImageRepositorySync")
 		os.Exit(1)
@@ -77,7 +93,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	setupLog.Info("starting manager", "resync-interval", resyncInterval)
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)

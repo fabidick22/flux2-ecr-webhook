@@ -7,6 +7,7 @@ metadata:
     {{- include "flux2-ecr-webhook.labels" . | nindent 4 }}
 data:
   FLUX_NAMESPACE: {{ .Values.flux.namespace | quote }}
+  FLUX_WEBHOOK_BASE_URL: {{ .Values.flux.webhookBaseURL | quote }}
   SCAN_ALL_NAMESPACES: {{ .Values.scan.allNamespaces | quote }}
   SCAN_INCLUDE_NAMESPACES: {{ .Values.scan.includeNamespaces | join "," | quote }}
   SCAN_EXCLUDE_NAMESPACES: {{ .Values.scan.excludeNamespaces | join "," | quote }}

@@ -50,6 +50,11 @@ flux:
   # -- Namespace where Flux is installed. The controller will look for
   # ImageRepository, ImagePolicy and Receiver resources here.
   namespace: flux-system
+  # -- Base URL of the Flux notification-controller webhook server.
+  # The controller appends Receiver.status.webhookPath to build the full URL.
+  # Example: "https://flux.example.com"
+  # Required: the controller cannot build webhook URLs without this value.
+  webhookBaseURL: ""
 
 # -- Namespace scanning configuration.
 scan:
