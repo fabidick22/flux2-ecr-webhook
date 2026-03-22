@@ -1,3 +1,13 @@
+# [2.0.0-beta.3](https://github.com/fabidick22/flux2-ecr-webhook/compare/v2.0.0-beta.2...v2.0.0-beta.3) (2026-03-22)
+
+### Features
+
+- wire CloudProvider into reconciler ([8ae5b04](https://github.com/fabidick22/flux2-ecr-webhook/commit/8ae5b04f9bf4cdbdbc9f6450c924a10123211d96))
+
+### Other
+
+- Merge pull request #14 from fabidick22/feat/reconciler-sync ([64abf41](https://github.com/fabidick22/flux2-ecr-webhook/commit/64abf41e682cf4b12c0ce25d78650a9dc7a92730)), closes [#14](https://github.com/fabidick22/flux2-ecr-webhook/issues/14)
+
 # [2.0.0-beta.2](https://github.com/fabidick22/flux2-ecr-webhook/compare/v2.0.0-beta.1...v2.0.0-beta.2) (2026-03-22)
 
 ### Features
