@@ -1,7 +1,9 @@
 package main
 
 import (
+	"context"
 	"flag"
+	"fmt"
 	"os"
 	"time"
 
@@ -15,6 +17,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 
+	"github.com/fabidick22/flux2-ecr-webhook/internal/cloud"
+	"github.com/fabidick22/flux2-ecr-webhook/internal/cloud/aws"
 	"github.com/fabidick22/flux2-ecr-webhook/internal/config"
 	"github.com/fabidick22/flux2-ecr-webhook/internal/controller"
 )
@@ -56,10 +60,18 @@ func main() {
 	setupLog.Info("starting flux2-ecr-webhook controller",
 		"fluxNamespace", cfg.FluxNamespace,
 		"webhookBaseURL", cfg.WebhookBaseURL,
+		"cloudProvider", cfg.CloudProvider,
 		"scanAllNamespaces", cfg.ScanAllNamespaces,
 		"excludeNamespaces", cfg.ExcludeNamespaces,
 		"resyncInterval", effectiveResync,
 	)
+
+	// Initialize cloud provider.
+	provider, err := newCloudProvider(context.Background(), cfg)
+	if err != nil {
+		setupLog.Error(err, "unable to create cloud provider")
+		os.Exit(1)
+	}
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme: scheme,
@@ -78,6 +90,7 @@ func main() {
 	if err = (&controller.ImageRepositorySyncReconciler{
 		Client:         mgr.GetClient(),
 		Config:         cfg,
+		CloudProvider:  provider,
 		ResyncInterval: effectiveResync,
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ImageRepositorySync")
@@ -96,5 +109,21 @@ func main() {
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)
+	}
+}
+
+func newCloudProvider(ctx context.Context, cfg config.Config) (cloud.CloudProvider, error) {
+	switch cfg.CloudProvider {
+	case "aws":
+		return aws.NewProvider(ctx, aws.Config{
+			Region:        cfg.AWSRegion,
+			AppName:       cfg.AWSAppName,
+			LambdaName:    cfg.AWSLambdaName,
+			LambdaRuntime: cfg.AWSLambdaRuntime,
+			LambdaTimeout: cfg.AWSLambdaTimeout,
+			SQSName:       cfg.AWSSQSName,
+		})
+	default:
+		return nil, fmt.Errorf("unsupported cloud provider: %s", cfg.CloudProvider)
 	}
 }

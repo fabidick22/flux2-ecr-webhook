@@ -2,6 +2,7 @@ package controller
 
 import (
 	"context"
+	"sync"
 	"time"
 
 	imagev1beta2 "github.com/fluxcd/image-reflector-controller/api/v1beta2"
@@ -13,6 +14,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
+	"github.com/fabidick22/flux2-ecr-webhook/internal/cloud"
 	"github.com/fabidick22/flux2-ecr-webhook/internal/config"
 	"github.com/fabidick22/flux2-ecr-webhook/internal/discovery"
 	"github.com/fabidick22/flux2-ecr-webhook/internal/mapping"
@@ -24,7 +26,11 @@ import (
 type ImageRepositorySyncReconciler struct {
 	client.Client
 	Config         config.Config
+	CloudProvider  cloud.CloudProvider
 	ResyncInterval time.Duration
+
+	infraOnce sync.Once
+	infraErr  error
 }
 
 // RBAC markers — used by controller-gen to generate ClusterRole manifests.
@@ -70,8 +76,20 @@ func (r *ImageRepositorySyncReconciler) Reconcile(ctx context.Context, req ctrl.
 	repoMapping := mapping.Build(allInfos)
 	logger.Info("repo mapping built", "ecrRepos", len(repoMapping))
 
-	// TODO (Phase 3): persist repoMapping to AWS SecretsManager and
-	//   sync the EventBridge rule's ECR repository list.
+	// 4. Ensure cloud infrastructure exists (runs once per controller lifecycle).
+	r.infraOnce.Do(func() {
+		logger.Info("ensuring cloud infrastructure")
+		r.infraErr = r.CloudProvider.EnsureInfrastructure(ctx)
+	})
+	if r.infraErr != nil {
+		return ctrl.Result{}, r.infraErr
+	}
+
+	// 5. Sync the repo mapping and EventBridge filter to the cloud.
+	if err := r.CloudProvider.SyncMapping(ctx, repoMapping); err != nil {
+		return ctrl.Result{}, err
+	}
+	logger.Info("cloud sync complete")
 
 	return ctrl.Result{RequeueAfter: r.ResyncInterval}, nil
 }

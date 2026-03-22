@@ -77,6 +77,9 @@ controller:
   # -- Enable leader election. Recommended when replicaCount > 1.
   leaderElection: false
 
+# -- Cloud provider used by the controller. Currently only "aws" is supported.
+cloudProvider: aws
+
 # -- AWS configuration.
 aws:
   # -- AWS region where resources are managed (e.g. us-east-1).

@@ -12,6 +12,7 @@ data:
   SCAN_INCLUDE_NAMESPACES: {{ .Values.scan.includeNamespaces | join "," | quote }}
   SCAN_EXCLUDE_NAMESPACES: {{ .Values.scan.excludeNamespaces | join "," | quote }}
   RESYNC_INTERVAL: {{ .Values.controller.resyncInterval | quote }}
+  CLOUD_PROVIDER: {{ .Values.cloudProvider | quote }}
   AWS_REGION: {{ .Values.aws.region | quote }}
   AWS_LAMBDA_NAME: {{ .Values.aws.resources.lambda.name | quote }}
   AWS_LAMBDA_RUNTIME: {{ .Values.aws.resources.lambda.runtime | quote }}

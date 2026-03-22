@@ -2,6 +2,7 @@ package config
 
 import (
 	"os"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -15,8 +16,11 @@ type Config struct {
 	IncludeNamespaces []string
 	ExcludeNamespaces []string
 	ExcludeAnnotation string
+	CloudProvider     string
 	AWSRegion         string
 	AWSLambdaName     string
+	AWSLambdaRuntime  string
+	AWSLambdaTimeout  int32
 	AWSSQSName        string
 	AWSAppName        string
 	ResyncInterval    string
@@ -32,8 +36,11 @@ func FromEnv() Config {
 		IncludeNamespaces: splitCSV(getEnv("SCAN_INCLUDE_NAMESPACES", "")),
 		ExcludeNamespaces: splitCSV(getEnv("SCAN_EXCLUDE_NAMESPACES", "")),
 		ExcludeAnnotation: getEnv("EXCLUDE_ANNOTATION", "ecr-webhook.io/skip"),
+		CloudProvider:     getEnv("CLOUD_PROVIDER", "aws"),
 		AWSRegion:         getEnv("AWS_REGION", ""),
 		AWSLambdaName:     getEnv("AWS_LAMBDA_NAME", "flux2-ecr-webhook"),
+		AWSLambdaRuntime:  getEnv("AWS_LAMBDA_RUNTIME", "python3.12"),
+		AWSLambdaTimeout:  parseInt32(getEnv("AWS_LAMBDA_TIMEOUT", "30")),
 		AWSSQSName:        getEnv("AWS_SQS_NAME", "flux2-ecr-webhook-push-events"),
 		AWSAppName:        getEnv("AWS_APP_NAME", "flux2-ecr-webhook"),
 		ResyncInterval:    getEnv("RESYNC_INTERVAL", "5m"),
@@ -55,6 +62,14 @@ func getEnv(key, defaultVal string) string {
 		return v
 	}
 	return defaultVal
+}
+
+func parseInt32(s string) int32 {
+	v, err := strconv.ParseInt(s, 10, 32)
+	if err != nil {
+		return 30
+	}
+	return int32(v)
 }
 
 func splitCSV(s string) []string {
