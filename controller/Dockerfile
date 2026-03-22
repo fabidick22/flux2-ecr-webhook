@@ -14,12 +14,18 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
     -o manager \
     ./cmd/main.go
 
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
+    -ldflags="-w -s" \
+    -o cleanup \
+    ./cmd/cleanup/main.go
+
 # Runtime stage — distroless for minimal attack surface
 FROM gcr.io/distroless/static:nonroot
 
 WORKDIR /
 
 COPY --from=builder /workspace/manager .
+COPY --from=builder /workspace/cleanup .
 
 USER 65532:65532
 
