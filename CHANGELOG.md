@@ -1,3 +1,17 @@
+# [2.0.0-beta.4](https://github.com/fabidick22/flux2-ecr-webhook/compare/v2.0.0-beta.3...v2.0.0-beta.4) (2026-03-22)
+
+### Continuous Integration
+
+- add helm chart release workflow ([ef7b8e5](https://github.com/fabidick22/flux2-ecr-webhook/commit/ef7b8e59ec090e77994996a99938181eff7c32ad))
+
+### Features
+
+- add pre-delete cleanup hook ([27aa81e](https://github.com/fabidick22/flux2-ecr-webhook/commit/27aa81e1a94c66d2dc97fb5178218835d02b18a6))
+
+### Other
+
+- Merge pull request #15 from fabidick22/feat/lifecycle-cleanup ([1142c0e](https://github.com/fabidick22/flux2-ecr-webhook/commit/1142c0e559bed1f4577fe50983366feff9fb4399)), closes [#15](https://github.com/fabidick22/flux2-ecr-webhook/issues/15)
+
 # [2.0.0-beta.3](https://github.com/fabidick22/flux2-ecr-webhook/compare/v2.0.0-beta.2...v2.0.0-beta.3) (2026-03-22)
 
 ### Features
