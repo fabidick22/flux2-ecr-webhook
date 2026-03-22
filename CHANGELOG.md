@@ -1,3 +1,9 @@
+# [2.0.0-beta.7](https://github.com/fabidick22/flux2-ecr-webhook/compare/v2.0.0-beta.6...v2.0.0-beta.7) (2026-03-22)
+
+### Build System
+
+- add Docker image publish job to semver workflow ([aa252f8](https://github.com/fabidick22/flux2-ecr-webhook/commit/aa252f8853a0de139d4bb2c9920dfc52916e3993))
+
 # [2.0.0-beta.6](https://github.com/fabidick22/flux2-ecr-webhook/compare/v2.0.0-beta.5...v2.0.0-beta.6) (2026-03-22)
 
 ### Code Refactoring
