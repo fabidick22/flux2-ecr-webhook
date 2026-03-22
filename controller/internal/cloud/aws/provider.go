@@ -170,12 +170,8 @@ func (p *Provider) Cleanup(ctx context.Context) error {
 func (p *Provider) roleName() string      { return p.cfg.AppName + "-lambda-role" }
 func (p *Provider) eventRuleName() string  { return p.cfg.AppName + "-ecr-push" }
 func (p *Provider) eventTargetID() string  { return p.cfg.AppName + "-sqs-target" }
-func (p *Provider) repoMappingSecretName() string {
-	return fmt.Sprintf("lambda/%s/repo-mapping", p.cfg.AppName)
-}
-func (p *Provider) tokenSecretName() string {
-	return fmt.Sprintf("lambda/%s/token", p.cfg.AppName)
-}
+func (p *Provider) repoMappingSecretName() string { return p.cfg.AppName + "-repo-mapping" }
+func (p *Provider) tokenSecretName() string       { return p.cfg.AppName + "-token" }
 
 // buildLambdaZip creates an in-memory ZIP with the embedded Python source.
 func buildLambdaZip() ([]byte, error) {

@@ -38,11 +38,11 @@ func FromEnv() Config {
 		ExcludeAnnotation: getEnv("EXCLUDE_ANNOTATION", "ecr-webhook.io/skip"),
 		CloudProvider:     getEnv("CLOUD_PROVIDER", "aws"),
 		AWSRegion:         getEnv("AWS_REGION", ""),
-		AWSLambdaName:     getEnv("AWS_LAMBDA_NAME", "flux2-ecr-webhook"),
+		AWSLambdaName:     getEnv("AWS_LAMBDA_NAME", "flux-webhook"),
 		AWSLambdaRuntime:  getEnv("AWS_LAMBDA_RUNTIME", "python3.12"),
 		AWSLambdaTimeout:  parseInt32(getEnv("AWS_LAMBDA_TIMEOUT", "30")),
-		AWSSQSName:        getEnv("AWS_SQS_NAME", "flux2-ecr-webhook-push-events"),
-		AWSAppName:        getEnv("AWS_APP_NAME", "flux2-ecr-webhook"),
+		AWSSQSName:        getEnv("AWS_SQS_NAME", "flux-webhook-push-events"),
+		AWSAppName:        getEnv("AWS_APP_NAME", "flux-webhook"),
 		ResyncInterval:    getEnv("RESYNC_INTERVAL", "5m"),
 	}
 }

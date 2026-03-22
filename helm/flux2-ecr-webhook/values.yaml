@@ -90,16 +90,17 @@ aws:
   resources:
     lambda:
       # -- Lambda function name to create/update.
-      name: flux2-ecr-webhook
+      name: flux-webhook
       # -- Lambda runtime. Update when upgrading the Python version.
       runtime: python3.12
       # -- Lambda execution timeout in seconds.
       timeout: 30
     sqs:
       # -- SQS queue name for buffering ECR push events.
-      name: flux2-ecr-webhook-push-events
-    # -- Prefix used for SecretsManager and CloudWatch resource names.
-    appName: flux2-ecr-webhook
+      name: flux-webhook-push-events
+    # -- Prefix used for all cloud resource names (IAM, Secrets, EventBridge, etc).
+    # All resources are named {appName}-{suffix} for easy IAM policy scoping.
+    appName: flux-webhook
 
 # -- Annotation key placed on an ImageRepository to exclude it from
 # being managed by the controller. Value must be "true".

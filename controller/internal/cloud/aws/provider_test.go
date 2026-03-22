@@ -98,10 +98,10 @@ func TestNamingHelpers(t *testing.T) {
 	if got := p.eventRuleName(); got != "my-app-ecr-push" {
 		t.Errorf("eventRuleName() = %q", got)
 	}
-	if got := p.repoMappingSecretName(); got != "lambda/my-app/repo-mapping" {
+	if got := p.repoMappingSecretName(); got != "my-app-repo-mapping" {
 		t.Errorf("repoMappingSecretName() = %q", got)
 	}
-	if got := p.tokenSecretName(); got != "lambda/my-app/token" {
+	if got := p.tokenSecretName(); got != "my-app-token" {
 		t.Errorf("tokenSecretName() = %q", got)
 	}
 }
