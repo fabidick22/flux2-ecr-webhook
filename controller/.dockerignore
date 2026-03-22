@@ -1,0 +1,4 @@
+Dockerfile
+.dockerignore
+**/*_test.go
+**/.git
