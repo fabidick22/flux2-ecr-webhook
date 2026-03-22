@@ -1,3 +1,13 @@
+# [2.0.0-beta.2](https://github.com/fabidick22/flux2-ecr-webhook/compare/v2.0.0-beta.1...v2.0.0-beta.2) (2026-03-22)
+
+### Features
+
+- add CloudProvider interface with AWS implementation and GCP/Azure stubs ([5f2b75b](https://github.com/fabidick22/flux2-ecr-webhook/commit/5f2b75b07d8b6eabc54e62f75dc00bfe1e77bd4e))
+
+### Other
+
+- Merge pull request #13 from fabidick22/feat/cloud-provider ([4e129e5](https://github.com/fabidick22/flux2-ecr-webhook/commit/4e129e5577ba44c185c802468de6cd7dca4bd519)), closes [#13](https://github.com/fabidick22/flux2-ecr-webhook/issues/13)
+
 # [2.0.0-beta.1](https://github.com/fabidick22/flux2-ecr-webhook/compare/v1.3.0-beta.1...v2.0.0-beta.1) (2026-03-22)
 
 ### Other
