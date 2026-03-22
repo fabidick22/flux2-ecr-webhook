@@ -1,0 +1,23 @@
+apiVersion: v2
+name: flux2-ecr-webhook
+description: >
+  Kubernetes controller that automatically discovers Flux2 ImageRepository,
+  ImagePolicy and Receiver resources to configure AWS infrastructure
+  (Lambda, SQS, SecretsManager, EventBridge) without manual Terraform changes.
+type: application
+version: 2.0.0
+appVersion: "2.0.0"
+keywords:
+  - flux
+  - fluxcd
+  - ecr
+  - aws
+  - gitops
+  - controller
+  - operator
+home: https://github.com/fabidick22/flux2-ecr-webhook
+sources:
+  - https://github.com/fabidick22/flux2-ecr-webhook
+maintainers:
+  - name: fabidick22
+    url: https://github.com/fabidick22

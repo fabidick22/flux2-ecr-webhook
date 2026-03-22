@@ -1,0 +1,34 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ include "flux2-ecr-webhook.fullname" . }}
+  labels:
+    {{- include "flux2-ecr-webhook.labels" . | nindent 4 }}
+rules:
+  # Flux Image Automation resources — core of the auto-discovery logic.
+  - apiGroups: ["image.toolkit.fluxcd.io"]
+    resources: ["imagerepositories", "imagepolicies"]
+    verbs: ["get", "list", "watch"]
+
+  # Flux Notification resources — needed to read Receiver webhook URLs and tokens.
+  - apiGroups: ["notification.toolkit.fluxcd.io"]
+    resources: ["receivers"]
+    verbs: ["get", "list", "watch"]
+
+  # Core resources — namespace list for scan scoping, secrets for webhook tokens.
+  - apiGroups: [""]
+    resources: ["namespaces"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list", "watch"]
+
+  # Leader election (only active when controller.leaderElection is true).
+  - apiGroups: ["coordination.k8s.io"]
+    resources: ["leases"]
+    verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+
+  # Events — allows the controller to publish Kubernetes events for observability.
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "patch"]

@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "flux2-ecr-webhook.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "flux2-ecr-webhook.labels" . | nindent 4 }}
+data:
+  FLUX_NAMESPACE: {{ .Values.flux.namespace | quote }}
+  FLUX_WEBHOOK_BASE_URL: {{ .Values.flux.webhookBaseURL | quote }}
+  SCAN_ALL_NAMESPACES: {{ .Values.scan.allNamespaces | quote }}
+  SCAN_INCLUDE_NAMESPACES: {{ .Values.scan.includeNamespaces | join "," | quote }}
+  SCAN_EXCLUDE_NAMESPACES: {{ .Values.scan.excludeNamespaces | join "," | quote }}
+  RESYNC_INTERVAL: {{ .Values.controller.resyncInterval | quote }}
+  AWS_REGION: {{ .Values.aws.region | quote }}
+  AWS_LAMBDA_NAME: {{ .Values.aws.resources.lambda.name | quote }}
+  AWS_LAMBDA_RUNTIME: {{ .Values.aws.resources.lambda.runtime | quote }}
+  AWS_LAMBDA_TIMEOUT: {{ .Values.aws.resources.lambda.timeout | quote }}
+  AWS_SQS_NAME: {{ .Values.aws.resources.sqs.name | quote }}
+  AWS_APP_NAME: {{ .Values.aws.resources.appName | quote }}
+  EXCLUDE_ANNOTATION: {{ .Values.excludeAnnotation | quote }}
