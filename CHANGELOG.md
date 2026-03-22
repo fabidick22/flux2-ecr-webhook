@@ -1,3 +1,32 @@
+# [1.3.0-beta.1](https://github.com/fabidick22/flux2-ecr-webhook/compare/v1.2.0...v1.3.0-beta.1) (2026-03-22)
+
+### Bug Fixes
+
+- helm IRSA auto-annotation and values comment ([c34e49c](https://github.com/fabidick22/flux2-ecr-webhook/commit/c34e49cb75fe732230dbb8f8e1e490a67e53b625))
+- receiver namespace matching and add go.sum ([25d74a4](https://github.com/fabidick22/flux2-ecr-webhook/commit/25d74a4bdee0bf92e7355bc076955c27fd48950a))
+
+### Continuous Integration
+
+- add maintenance branch triggers to semver workflow ([95313cc](https://github.com/fabidick22/flux2-ecr-webhook/commit/95313cce3b3c6072591c4e7723b842c140193277))
+
+### Documentation
+
+- update README for v2 ([54ededc](https://github.com/fabidick22/flux2-ecr-webhook/commit/54ededc740af01947627717d17dffc0cecfbd60f))
+
+### Features
+
+- add Phase 1 foundation for v2 controller ([ea94832](https://github.com/fabidick22/flux2-ecr-webhook/commit/ea948323064e1a4f340299f4480453165e1c68b7))
+- implement Phase 2 auto-discovery logic ([28c73d5](https://github.com/fabidick22/flux2-ecr-webhook/commit/28c73d577a907fb32cc38f34ab8ece3b1b425df8))
+
+### Other
+
+- Merge branch 'claude/release-v2-branch-fa2ik' into beta ([365c045](https://github.com/fabidick22/flux2-ecr-webhook/commit/365c0452dcabb4dc61511ce78dbdd570508dea7e))
+- Merge pull request #12 from fabidick22/claude/release-v2-branch-fa2ik ([bd512d6](https://github.com/fabidick22/flux2-ecr-webhook/commit/bd512d6a106e290a86669e94f31ebee107179901)), closes [#12](https://github.com/fabidick22/flux2-ecr-webhook/issues/12)
+
+### Tests
+
+- add unit tests for config, discovery and mapping ([6eedf13](https://github.com/fabidick22/flux2-ecr-webhook/commit/6eedf1371229c71ba55538a0a71bd6ff5936c467))
+
 # [1.2.0](https://github.com/fabidick22/flux2-ecr-webhook/compare/v1.1.0...v1.2.0) (2023-07-12)
 
 ### Chores
