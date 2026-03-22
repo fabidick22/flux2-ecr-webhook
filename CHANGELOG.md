@@ -1,3 +1,13 @@
+# [2.0.0-beta.1](https://github.com/fabidick22/flux2-ecr-webhook/compare/v1.3.0-beta.1...v2.0.0-beta.1) (2026-03-22)
+
+### Other
+
+- feat!: v2 kubernetes controller replaces terraform module ([fb23497](https://github.com/fabidick22/flux2-ecr-webhook/commit/fb23497153e21dea513f03030668b4228371ef5f))
+
+### BREAKING CHANGE
+
+- v2 introduces a Kubernetes-native controller with auto-discovery, replacing the Terraform-only approach from v1.
+
 # [1.3.0-beta.1](https://github.com/fabidick22/flux2-ecr-webhook/compare/v1.2.0...v1.3.0-beta.1) (2026-03-22)
 
 ### Bug Fixes
