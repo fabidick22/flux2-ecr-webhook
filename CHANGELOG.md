@@ -1,3 +1,9 @@
+# [2.0.0-beta.6](https://github.com/fabidick22/flux2-ecr-webhook/compare/v2.0.0-beta.5...v2.0.0-beta.6) (2026-03-22)
+
+### Code Refactoring
+
+- use flux-webhook prefix for all cloud resources ([1786566](https://github.com/fabidick22/flux2-ecr-webhook/commit/1786566b9541b1969b9a5fc23155757074919e0e))
+
 # [2.0.0-beta.5](https://github.com/fabidick22/flux2-ecr-webhook/compare/v2.0.0-beta.4...v2.0.0-beta.5) (2026-03-22)
 
 ### Chores
