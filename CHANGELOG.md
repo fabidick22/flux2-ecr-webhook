@@ -1,3 +1,9 @@
+# [2.0.0-beta.8](https://github.com/fabidick22/flux2-ecr-webhook/compare/v2.0.0-beta.7...v2.0.0-beta.8) (2026-03-22)
+
+### Bug Fixes
+
+- retry Lambda creation on IAM role propagation delay ([8a90f73](https://github.com/fabidick22/flux2-ecr-webhook/commit/8a90f73d4c996a4b9dff0bf80f08b411cbea3c91))
+
 # [2.0.0-beta.7](https://github.com/fabidick22/flux2-ecr-webhook/compare/v2.0.0-beta.6...v2.0.0-beta.7) (2026-03-22)
 
 ### Build System
