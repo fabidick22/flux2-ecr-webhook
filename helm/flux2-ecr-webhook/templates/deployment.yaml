@@ -41,13 +41,6 @@ spec:
           envFrom:
             - configMapRef:
                 name: {{ include "flux2-ecr-webhook.fullname" . }}
-          {{- if .Values.aws.irsaRoleArn }}
-          env:
-            - name: AWS_ROLE_ARN
-              value: {{ .Values.aws.irsaRoleArn | quote }}
-            - name: AWS_WEB_IDENTITY_TOKEN_FILE
-              value: /var/run/secrets/eks.amazonaws.com/serviceaccount/token
-          {{- end }}
           ports:
             - name: metrics
               containerPort: 8080

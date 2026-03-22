@@ -58,7 +58,7 @@ flux:
 
 # -- Namespace scanning configuration.
 scan:
-  # -- Scan all namespaces for HelmRelease resources. When true,
+  # -- Scan all namespaces for ImageRepository resources. When true,
   # includeNamespaces is ignored.
   allNamespaces: true
   # -- Scan only these namespaces (used when allNamespaces is false).
