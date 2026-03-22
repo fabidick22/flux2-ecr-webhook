@@ -1,3 +1,13 @@
+# [2.0.0-beta.5](https://github.com/fabidick22/flux2-ecr-webhook/compare/v2.0.0-beta.4...v2.0.0-beta.5) (2026-03-22)
+
+### Chores
+
+- trigger helm chart publish ([421ece8](https://github.com/fabidick22/flux2-ecr-webhook/commit/421ece802677ccef12f1bf1470546bfee3f9a64a))
+
+### Continuous Integration
+
+- publish helm chart to GHCR on release ([5141cbd](https://github.com/fabidick22/flux2-ecr-webhook/commit/5141cbd4df6265cc00e876ac4a5c57a3d917193b))
+
 # [2.0.0-beta.4](https://github.com/fabidick22/flux2-ecr-webhook/compare/v2.0.0-beta.3...v2.0.0-beta.4) (2026-03-22)
 
 ### Continuous Integration
