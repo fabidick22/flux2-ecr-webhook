@@ -54,9 +54,9 @@ func (d *FluxDiscovery) DiscoverForImageRepository(ctx context.Context, repo *im
 		return nil, err
 	}
 
-	receivers, err := d.findReceiversForRepo(ctx, repo.Name)
+	receivers, err := d.findReceiversForRepo(ctx, repo.Name, repo.Namespace)
 	if err != nil {
-		return nil, fmt.Errorf("listing receivers for %s: %w", repo.Name, err)
+		return nil, fmt.Errorf("listing receivers for %s/%s: %w", repo.Namespace, repo.Name, err)
 	}
 	if len(receivers) == 0 {
 		logger.V(1).Info("no Receivers reference this ImageRepository, skipping")
@@ -99,8 +99,8 @@ func (d *FluxDiscovery) DiscoverForImageRepository(ctx context.Context, repo *im
 }
 
 // findReceiversForRepo returns all Receivers in the Flux namespace whose
-// spec.resources list references the given ImageRepository by name.
-func (d *FluxDiscovery) findReceiversForRepo(ctx context.Context, repoName string) ([]notificationv1.Receiver, error) {
+// spec.resources list references the given ImageRepository by name and namespace.
+func (d *FluxDiscovery) findReceiversForRepo(ctx context.Context, repoName, repoNamespace string) ([]notificationv1.Receiver, error) {
 	list := &notificationv1.ReceiverList{}
 	if err := d.Client.List(ctx, list, client.InNamespace(d.FluxNamespace)); err != nil {
 		return nil, err
@@ -109,7 +109,16 @@ func (d *FluxDiscovery) findReceiversForRepo(ctx context.Context, repoName strin
 	var matched []notificationv1.Receiver
 	for _, r := range list.Items {
 		for _, res := range r.Spec.Resources {
-			if res.Kind == "ImageRepository" && res.Name == repoName {
+			if res.Kind != "ImageRepository" || res.Name != repoName {
+				continue
+			}
+			// Namespace is optional in CrossNamespaceObjectReference;
+			// empty means same namespace as the Receiver itself.
+			resNS := res.Namespace
+			if resNS == "" {
+				resNS = r.Namespace
+			}
+			if resNS == repoNamespace {
 				matched = append(matched, r)
 				break
 			}
