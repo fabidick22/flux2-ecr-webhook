@@ -237,8 +237,9 @@ func (p *Provider) ensureLambda(ctx context.Context, roleArn, queueArn string) e
 		return err
 	}
 
-	// Create new function.
-	_, err = p.lm.CreateFunction(ctx, &lambda.CreateFunctionInput{
+	// Create new function. Retry because IAM role propagation is eventually
+	// consistent and Lambda may not be able to assume it immediately.
+	createInput := &lambda.CreateFunctionInput{
 		FunctionName: ptr(p.cfg.LambdaName),
 		Runtime:      lambdatypes.Runtime(p.cfg.LambdaRuntime),
 		Handler:      ptr("app.lambda_handler"),
@@ -246,17 +247,25 @@ func (p *Provider) ensureLambda(ctx context.Context, roleArn, queueArn string) e
 		Code: &lambdatypes.FunctionCode{
 			ZipFile: zipData,
 		},
-		Timeout:     aws.Int32(p.cfg.LambdaTimeout),
-		MemorySize:  aws.Int32(128),
+		Timeout:    aws.Int32(p.cfg.LambdaTimeout),
+		MemorySize: aws.Int32(128),
 		Environment: &lambdatypes.Environment{
 			Variables: map[string]string{
-				"REPOS_MAPPING":                 p.repoMappingSecretName(),
+				"REPOS_MAPPING":                   p.repoMappingSecretName(),
 				"FLUX2_WEBHOOK_TOKEN_SECRET_NAME": p.tokenSecretName(),
 			},
 		},
 		Tags: map[string]string{"managed-by": "flux2-ecr-webhook"},
-	})
-	if err != nil {
+	}
+	for attempt := 0; attempt < 5; attempt++ {
+		_, err = p.lm.CreateFunction(ctx, createInput)
+		if err == nil {
+			break
+		}
+		if isInvalidParameterValue(err) && attempt < 4 {
+			time.Sleep(time.Duration(attempt+1) * 5 * time.Second)
+			continue
+		}
 		return fmt.Errorf("creating lambda: %w", err)
 	}
 

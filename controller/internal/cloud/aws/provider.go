@@ -305,5 +305,14 @@ func searchString(s, sub string) bool {
 	return false
 }
 
+// isInvalidParameterValue detects Lambda's InvalidParameterValueException,
+// commonly returned when the IAM role is not yet propagated.
+func isInvalidParameterValue(err error) bool {
+	if err == nil {
+		return false
+	}
+	return contains(err.Error(), "InvalidParameterValueException")
+}
+
 // ptr returns a pointer to the given string.
 func ptr(s string) *string { return aws.String(s) }
