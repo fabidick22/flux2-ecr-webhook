@@ -1,0 +1,71 @@
+name: Helm Chart Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  helm-release:
+    name: Package and publish Helm chart
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          # Remove leading 'v' if present
+          VERSION="${TAG#v}"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Update Chart.yaml version
+        run: |
+          sed -i "s/^version:.*/version: ${{ steps.version.outputs.version }}/" helm/flux2-ecr-webhook/Chart.yaml
+          sed -i "s/^appVersion:.*/appVersion: \"${{ steps.version.outputs.version }}\"/" helm/flux2-ecr-webhook/Chart.yaml
+          cat helm/flux2-ecr-webhook/Chart.yaml
+
+      - name: Package chart
+        run: |
+          mkdir -p .chart-packages
+          helm package helm/flux2-ecr-webhook -d .chart-packages
+
+      - name: Checkout gh-pages
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: gh-pages
+        continue-on-error: true
+
+      - name: Initialize gh-pages if needed
+        run: |
+          if [ ! -d "gh-pages" ]; then
+            mkdir gh-pages
+            cd gh-pages
+            git init
+            git checkout -b gh-pages
+            git remote add origin "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git"
+          fi
+
+      - name: Update chart repo index
+        run: |
+          cp .chart-packages/*.tgz gh-pages/
+          helm repo index gh-pages --url "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
+
+      - name: Push to gh-pages
+        run: |
+          cd gh-pages
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git diff --cached --quiet && echo "No changes" && exit 0
+          git commit -m "chore: publish chart ${{ steps.version.outputs.version }}"
+          git push origin gh-pages --force
