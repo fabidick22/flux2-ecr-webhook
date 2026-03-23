@@ -1,3 +1,9 @@
+# [2.0.0-beta.9](https://github.com/fabidick22/flux2-ecr-webhook/compare/v2.0.0-beta.8...v2.0.0-beta.9) (2026-03-23)
+
+### Bug Fixes
+
+- use adaptive retry and allow infra setup retry on failure ([19ee83d](https://github.com/fabidick22/flux2-ecr-webhook/commit/19ee83dbfcb2756457ec0e3aaa565a41f0d4e170))
+
 # [2.0.0-beta.8](https://github.com/fabidick22/flux2-ecr-webhook/compare/v2.0.0-beta.7...v2.0.0-beta.8) (2026-03-22)
 
 ### Bug Fixes
