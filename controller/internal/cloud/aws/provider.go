@@ -10,6 +10,7 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/aws/retry"
 	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/eventbridge"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
@@ -45,7 +46,16 @@ type Provider struct {
 
 // NewProvider creates an AWS CloudProvider from the given config.
 func NewProvider(ctx context.Context, cfg Config) (*Provider, error) {
-	awsCfg, err := awsconfig.LoadDefaultConfig(ctx, awsconfig.WithRegion(cfg.Region))
+	awsCfg, err := awsconfig.LoadDefaultConfig(ctx,
+		awsconfig.WithRegion(cfg.Region),
+		awsconfig.WithRetryer(func() aws.Retryer {
+			return retry.NewAdaptiveMode(func(o *retry.AdaptiveModeOptions) {
+				o.StandardOptions = append(o.StandardOptions, func(so *retry.StandardOptions) {
+					so.MaxAttempts = 5
+				})
+			})
+		}),
+	)
 	if err != nil {
 		return nil, fmt.Errorf("loading AWS config: %w", err)
 	}

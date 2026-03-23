@@ -29,8 +29,8 @@ type ImageRepositorySyncReconciler struct {
 	CloudProvider  cloud.CloudProvider
 	ResyncInterval time.Duration
 
-	infraOnce sync.Once
-	infraErr  error
+	infraMu   sync.Mutex
+	infraDone bool
 }
 
 // RBAC markers — used by controller-gen to generate ClusterRole manifests.
@@ -76,13 +76,9 @@ func (r *ImageRepositorySyncReconciler) Reconcile(ctx context.Context, req ctrl.
 	repoMapping := mapping.Build(allInfos)
 	logger.Info("repo mapping built", "ecrRepos", len(repoMapping))
 
-	// 4. Ensure cloud infrastructure exists (runs once per controller lifecycle).
-	r.infraOnce.Do(func() {
-		logger.Info("ensuring cloud infrastructure")
-		r.infraErr = r.CloudProvider.EnsureInfrastructure(ctx)
-	})
-	if r.infraErr != nil {
-		return ctrl.Result{}, r.infraErr
+	// 4. Ensure cloud infrastructure exists (runs once, retries on failure).
+	if err := r.ensureInfraOnce(ctx); err != nil {
+		return ctrl.Result{}, err
 	}
 
 	// 5. Sync the repo mapping and EventBridge filter to the cloud.
@@ -92,6 +88,23 @@ func (r *ImageRepositorySyncReconciler) Reconcile(ctx context.Context, req ctrl.
 	logger.Info("cloud sync complete")
 
 	return ctrl.Result{RequeueAfter: r.ResyncInterval}, nil
+}
+
+// ensureInfraOnce runs EnsureInfrastructure exactly once. Unlike sync.Once,
+// it retries on subsequent reconciles if the first attempt failed.
+func (r *ImageRepositorySyncReconciler) ensureInfraOnce(ctx context.Context) error {
+	r.infraMu.Lock()
+	defer r.infraMu.Unlock()
+	if r.infraDone {
+		return nil
+	}
+	logger := log.FromContext(ctx).WithName("infra")
+	logger.Info("ensuring cloud infrastructure")
+	if err := r.CloudProvider.EnsureInfrastructure(ctx); err != nil {
+		return err
+	}
+	r.infraDone = true
+	return nil
 }
 
 // listManagedRepos lists all ImageRepository resources that pass the configured
