@@ -262,52 +262,53 @@ func (p *Provider) ensureLambda(ctx context.Context, roleArn, queueArn string) e
 	})
 	if err == nil {
 		// Update existing function code.
-		_, err = p.lm.UpdateFunctionCode(ctx, &lambda.UpdateFunctionCodeInput{
+		if _, err = p.lm.UpdateFunctionCode(ctx, &lambda.UpdateFunctionCodeInput{
 			FunctionName: ptr(p.cfg.LambdaName),
 			ZipFile:      zipData,
-		})
-		return err
-	}
-	if !isNotFound(err) {
-		return err
-	}
-
-	// Create new function. Retry because IAM role propagation is eventually
-	// consistent and Lambda may not be able to assume it immediately.
-	createInput := &lambda.CreateFunctionInput{
-		FunctionName: ptr(p.cfg.LambdaName),
-		Runtime:      lambdatypes.Runtime(p.cfg.LambdaRuntime),
-		Handler:      ptr("app.lambda_handler"),
-		Role:         ptr(roleArn),
-		Code: &lambdatypes.FunctionCode{
-			ZipFile: zipData,
-		},
-		Timeout:    aws.Int32(p.cfg.LambdaTimeout),
-		MemorySize: aws.Int32(128),
-		Environment: &lambdatypes.Environment{
-			Variables: map[string]string{
-				"REPOS_MAPPING":                   p.repoMappingSecretName(),
-				"FLUX2_WEBHOOK_TOKEN_SECRET_NAME": p.tokenSecretName(),
+		}); err != nil {
+			return err
+		}
+	} else if isNotFound(err) {
+		// Create new function. Retry because IAM role propagation is eventually
+		// consistent and Lambda may not be able to assume it immediately.
+		createInput := &lambda.CreateFunctionInput{
+			FunctionName: ptr(p.cfg.LambdaName),
+			Runtime:      lambdatypes.Runtime(p.cfg.LambdaRuntime),
+			Handler:      ptr("app.lambda_handler"),
+			Role:         ptr(roleArn),
+			Code: &lambdatypes.FunctionCode{
+				ZipFile: zipData,
 			},
-		},
-		Tags: map[string]string{
-			managedByTag: managedByValue,
-			typeTagKey:   "lambda",
-		},
-	}
-	for attempt := 0; attempt < 5; attempt++ {
-		_, err = p.lm.CreateFunction(ctx, createInput)
-		if err == nil {
-			break
+			Timeout:    aws.Int32(p.cfg.LambdaTimeout),
+			MemorySize: aws.Int32(128),
+			Environment: &lambdatypes.Environment{
+				Variables: map[string]string{
+					"REPOS_MAPPING":                   p.repoMappingSecretName(),
+					"FLUX2_WEBHOOK_TOKEN_SECRET_NAME": p.tokenSecretName(),
+				},
+			},
+			Tags: map[string]string{
+				managedByTag: managedByValue,
+				typeTagKey:   "lambda",
+			},
 		}
-		if isInvalidParameterValue(err) && attempt < 4 {
-			time.Sleep(time.Duration(attempt+1) * 5 * time.Second)
-			continue
+		for attempt := 0; attempt < 5; attempt++ {
+			_, err = p.lm.CreateFunction(ctx, createInput)
+			if err == nil {
+				break
+			}
+			if isInvalidParameterValue(err) && attempt < 4 {
+				time.Sleep(time.Duration(attempt+1) * 5 * time.Second)
+				continue
+			}
+			return fmt.Errorf("creating lambda: %w", err)
 		}
-		return fmt.Errorf("creating lambda: %w", err)
+	} else {
+		return err
 	}
 
-	// Create event source mapping (SQS → Lambda).
+	// Ensure event source mapping (SQS → Lambda) always exists,
+	// even when the function was already present (e.g. reinstall).
 	if queueArn != "" {
 		return p.ensureEventSourceMapping(ctx, queueArn)
 	}
