@@ -78,8 +78,9 @@ type Provider struct {
 	st  *sts.Client
 	tag *resourcegroupstaggingapi.Client
 
-	resolved   *resolvedNames
-	resolveMu  sync.Mutex
+	resolved        *resolvedNames
+	resolveMu       sync.Mutex
+	lastMappingJSON string
 }
 
 // NewProvider creates an AWS CloudProvider from the given config.
@@ -275,7 +276,7 @@ func (p *Provider) EnsureInfrastructure(ctx context.Context) error {
 }
 
 // SyncMapping updates the repo_mapping secret and EventBridge rule filter.
-// Uses resolved resource names (from explicit config, tag discovery, or naming convention).
+// Skips AWS API calls when the mapping has not changed since the last sync.
 func (p *Provider) SyncMapping(ctx context.Context, repoMapping mapping.RepoMapping) error {
 	logger := log.FromContext(ctx).WithName("aws")
 
@@ -284,15 +285,22 @@ func (p *Provider) SyncMapping(ctx context.Context, repoMapping mapping.RepoMapp
 		return fmt.Errorf("resolving resource names: %w", err)
 	}
 
-	// Persist mapping to SecretsManager.
 	data, err := json.Marshal(repoMapping)
 	if err != nil {
 		return fmt.Errorf("marshalling repo mapping: %w", err)
 	}
-	if err := p.updateSecret(ctx, p.resolved.repoMappingSecret, string(data)); err != nil {
+
+	// Skip sync when mapping is unchanged.
+	currentJSON := string(data)
+	if currentJSON == p.lastMappingJSON {
+		logger.V(1).Info("mapping unchanged, skipping sync", "ecrRepos", len(repoMapping))
+		return nil
+	}
+
+	// Persist mapping to SecretsManager.
+	if err := p.updateSecret(ctx, p.resolved.repoMappingSecret, currentJSON); err != nil {
 		return fmt.Errorf("updating repo mapping secret: %w", err)
 	}
-	logger.Info("repo mapping persisted", "ecrRepos", len(repoMapping))
 
 	// Update EventBridge filter with discovered ECR repo names.
 	repoNames := make([]string, 0, len(repoMapping))
@@ -300,7 +308,6 @@ func (p *Provider) SyncMapping(ctx context.Context, repoMapping mapping.RepoMapp
 		repoNames = append(repoNames, name)
 	}
 
-	// We need the queue ARN to set the target.
 	_, queueArn, err := p.getQueueInfoByName(ctx, p.resolved.sqsQueue)
 	if err != nil {
 		return fmt.Errorf("getting queue ARN for EventBridge: %w", err)
@@ -309,7 +316,9 @@ func (p *Provider) SyncMapping(ctx context.Context, repoMapping mapping.RepoMapp
 	if err := p.ensureEventRuleByName(ctx, p.resolved.eventRule, queueArn, repoNames); err != nil {
 		return fmt.Errorf("updating EventBridge rule: %w", err)
 	}
-	logger.Info("EventBridge rule updated", "repos", repoNames)
+
+	p.lastMappingJSON = currentJSON
+	logger.Info("mapping synced", "ecrRepos", len(repoMapping), "repos", repoNames)
 
 	return nil
 }

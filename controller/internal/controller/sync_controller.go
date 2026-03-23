@@ -51,7 +51,7 @@ func (r *ImageRepositorySyncReconciler) Reconcile(ctx context.Context, req ctrl.
 	if err != nil {
 		return ctrl.Result{}, err
 	}
-	logger.Info("reconciling repo mapping", "managedRepos", len(repos))
+	logger.V(1).Info("reconciling", "managedRepos", len(repos))
 
 	// 2. For each repository, discover its associated Flux resources.
 	disc := &discovery.FluxDiscovery{
@@ -80,7 +80,7 @@ func (r *ImageRepositorySyncReconciler) Reconcile(ctx context.Context, req ctrl.
 
 	// 3. Build the complete repo_mapping from all discovered data.
 	repoMapping := mapping.Build(allInfos)
-	logger.Info("discovery complete", "managedRepos", len(repos), "withReceivers", matched, "withoutReceivers", skipped, "ecrRepos", len(repoMapping))
+	logger.V(1).Info("discovery complete", "managedRepos", len(repos), "withReceivers", matched, "withoutReceivers", skipped, "ecrRepos", len(repoMapping))
 
 	// 4. Ensure cloud infrastructure exists (runs once, retries on failure).
 	//    Skipped when manageInfrastructure is false (infra managed externally).
@@ -94,7 +94,7 @@ func (r *ImageRepositorySyncReconciler) Reconcile(ctx context.Context, req ctrl.
 	if err := r.CloudProvider.SyncMapping(ctx, repoMapping); err != nil {
 		return ctrl.Result{}, err
 	}
-	logger.Info("cloud sync complete")
+	logger.V(1).Info("sync complete")
 
 	return ctrl.Result{RequeueAfter: r.ResyncInterval}, nil
 }
