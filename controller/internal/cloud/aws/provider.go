@@ -315,6 +315,24 @@ func searchString(s, sub string) bool {
 	return false
 }
 
+// isScheduledForDeletion detects SecretsManager's error when a secret
+// is still pending deletion after a recent ForceDeleteWithoutRecovery.
+func isScheduledForDeletion(err error) bool {
+	if err == nil {
+		return false
+	}
+	return contains(err.Error(), "scheduled for deletion")
+}
+
+// isQueueDeletedRecently detects SQS's error when recreating a queue
+// within 60 seconds of deletion.
+func isQueueDeletedRecently(err error) bool {
+	if err == nil {
+		return false
+	}
+	return contains(err.Error(), "QueueDeletedRecently")
+}
+
 // isInvalidParameterValue detects Lambda's InvalidParameterValueException,
 // commonly returned when the IAM role is not yet propagated.
 func isInvalidParameterValue(err error) bool {

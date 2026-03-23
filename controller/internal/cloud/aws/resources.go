@@ -100,11 +100,20 @@ func (p *Provider) ensureQueue(ctx context.Context) (string, string, error) {
 		return url, arn, nil
 	}
 
-	_, err = p.sq.CreateQueue(ctx, &sqs.CreateQueueInput{
-		QueueName: ptr(p.cfg.SQSName),
-		Tags:      map[string]string{"managed-by": "flux2-ecr-webhook"},
-	})
-	if err != nil && !alreadyExists(err) {
+	// SQS requires a 60-second wait after deleting a queue before recreating
+	// it with the same name. Retry with backoff if we hit this window.
+	for attempt := 0; attempt < 4; attempt++ {
+		_, err = p.sq.CreateQueue(ctx, &sqs.CreateQueueInput{
+			QueueName: ptr(p.cfg.SQSName),
+			Tags:      map[string]string{"managed-by": "flux2-ecr-webhook"},
+		})
+		if err == nil || alreadyExists(err) {
+			break
+		}
+		if isQueueDeletedRecently(err) && attempt < 3 {
+			time.Sleep(20 * time.Second)
+			continue
+		}
 		return "", "", err
 	}
 
@@ -163,9 +172,20 @@ func (p *Provider) ensureSecrets(ctx context.Context) error {
 				{Key: ptr("managed-by"), Value: ptr("flux2-ecr-webhook")},
 			},
 		})
-		if err != nil && !alreadyExists(err) {
-			return fmt.Errorf("creating secret %s: %w", name, err)
+		if err == nil || alreadyExists(err) {
+			continue
 		}
+		// Secret may still be scheduled for deletion after a recent cleanup.
+		// Restore it instead of failing.
+		if isScheduledForDeletion(err) {
+			if _, restoreErr := p.sm.RestoreSecret(ctx, &secretsmanager.RestoreSecretInput{
+				SecretId: ptr(name),
+			}); restoreErr != nil {
+				return fmt.Errorf("restoring secret %s: %w", name, restoreErr)
+			}
+			continue
+		}
+		return fmt.Errorf("creating secret %s: %w", name, err)
 	}
 	return nil
 }
