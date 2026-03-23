@@ -1,3 +1,9 @@
+# [2.0.0-beta.15](https://github.com/fabidick22/flux2-ecr-webhook/compare/v2.0.0-beta.14...v2.0.0-beta.15) (2026-03-23)
+
+### Improvements
+
+- reduce log verbosity and skip unchanged syncs ([f9da812](https://github.com/fabidick22/flux2-ecr-webhook/commit/f9da8129d1963c2928707824f7dd70548c21b7ed))
+
 # [2.0.0-beta.14](https://github.com/fabidick22/flux2-ecr-webhook/compare/v2.0.0-beta.13...v2.0.0-beta.14) (2026-03-23)
 
 ### Bug Fixes
