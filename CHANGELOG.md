@@ -1,3 +1,9 @@
+# [2.0.0-beta.14](https://github.com/fabidick22/flux2-ecr-webhook/compare/v2.0.0-beta.13...v2.0.0-beta.14) (2026-03-23)
+
+### Bug Fixes
+
+- handle CloudWatch and Lambda conflict errors, add watch logging ([b1c667c](https://github.com/fabidick22/flux2-ecr-webhook/commit/b1c667c7cbb1f1278effd0bd685776d5cffb0ac3))
+
 # [2.0.0-beta.13](https://github.com/fabidick22/flux2-ecr-webhook/compare/v2.0.0-beta.12...v2.0.0-beta.13) (2026-03-23)
 
 ### Bug Fixes
