@@ -3,6 +3,7 @@ package aws
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"time"
 
@@ -13,6 +14,8 @@ import (
 	smtypes "github.com/aws/aws-sdk-go-v2/service/secretsmanager/types"
 	sqstypes "github.com/aws/aws-sdk-go-v2/service/sqs/types"
 
+	"github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs"
+	cwltypes "github.com/aws/aws-sdk-go-v2/service/cloudwatchlogs/types"
 	"github.com/aws/aws-sdk-go-v2/service/eventbridge"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 	"github.com/aws/aws-sdk-go-v2/service/lambda"
@@ -35,7 +38,8 @@ func (p *Provider) ensureRole(ctx context.Context) (string, error) {
 		RoleName:                 ptr(p.roleName()),
 		AssumeRolePolicyDocument: ptr(lambdaTrustPolicy),
 		Tags: []iamtypes.Tag{
-			{Key: ptr("managed-by"), Value: ptr("flux2-ecr-webhook")},
+			{Key: ptr(managedByTag), Value: ptr(managedByValue)},
+			{Key: ptr(typeTagKey), Value: ptr("lambda-role")},
 		},
 	})
 	if err != nil {
@@ -105,7 +109,10 @@ func (p *Provider) ensureQueue(ctx context.Context) (string, string, error) {
 	for attempt := 0; attempt < 4; attempt++ {
 		_, err = p.sq.CreateQueue(ctx, &sqs.CreateQueueInput{
 			QueueName: ptr(p.cfg.SQSName),
-			Tags:      map[string]string{"managed-by": "flux2-ecr-webhook"},
+			Tags: map[string]string{
+				managedByTag: managedByValue,
+				typeTagKey:   "queue",
+			},
 		})
 		if err == nil || alreadyExists(err) {
 			break
@@ -164,12 +171,20 @@ func (p *Provider) deleteQueue(ctx context.Context) error {
 // ── SecretsManager ──────────────────────────────────────────────────────
 
 func (p *Provider) ensureSecrets(ctx context.Context) error {
-	for _, name := range []string{p.repoMappingSecretName(), p.tokenSecretName()} {
+	secrets := []struct {
+		name     string
+		typeTag  string
+	}{
+		{p.repoMappingSecretName(), "repo-mapping"},
+		{p.tokenSecretName(), "token"},
+	}
+	for _, s := range secrets {
 		_, err := p.sm.CreateSecret(ctx, &secretsmanager.CreateSecretInput{
-			Name:         ptr(name),
+			Name:         ptr(s.name),
 			SecretString: ptr("{}"),
 			Tags: []smtypes.Tag{
-				{Key: ptr("managed-by"), Value: ptr("flux2-ecr-webhook")},
+				{Key: ptr(managedByTag), Value: ptr(managedByValue)},
+				{Key: ptr(typeTagKey), Value: ptr(s.typeTag)},
 			},
 		})
 		if err == nil || alreadyExists(err) {
@@ -179,13 +194,13 @@ func (p *Provider) ensureSecrets(ctx context.Context) error {
 		// Restore it instead of failing.
 		if isScheduledForDeletion(err) {
 			if _, restoreErr := p.sm.RestoreSecret(ctx, &secretsmanager.RestoreSecretInput{
-				SecretId: ptr(name),
+				SecretId: ptr(s.name),
 			}); restoreErr != nil {
-				return fmt.Errorf("restoring secret %s: %w", name, restoreErr)
+				return fmt.Errorf("restoring secret %s: %w", s.name, restoreErr)
 			}
 			continue
 		}
-		return fmt.Errorf("creating secret %s: %w", name, err)
+		return fmt.Errorf("creating secret %s: %w", s.name, err)
 	}
 	return nil
 }
@@ -275,7 +290,10 @@ func (p *Provider) ensureLambda(ctx context.Context, roleArn, queueArn string) e
 				"FLUX2_WEBHOOK_TOKEN_SECRET_NAME": p.tokenSecretName(),
 			},
 		},
-		Tags: map[string]string{"managed-by": "flux2-ecr-webhook"},
+		Tags: map[string]string{
+			managedByTag: managedByValue,
+			typeTagKey:   "lambda",
+		},
 	}
 	for attempt := 0; attempt < 5; attempt++ {
 		_, err = p.lm.CreateFunction(ctx, createInput)
@@ -340,6 +358,53 @@ func (p *Provider) deleteLambda(ctx context.Context) error {
 	return err
 }
 
+// ── CloudWatch Logs ─────────────────────────────────────────────────────
+
+func (p *Provider) ensureLogGroup(ctx context.Context) error {
+	name := p.logGroupName()
+
+	_, err := p.cw.CreateLogGroup(ctx, &cloudwatchlogs.CreateLogGroupInput{
+		LogGroupName: ptr(name),
+		Tags: map[string]string{
+			managedByTag: managedByValue,
+			typeTagKey:   "log-group",
+		},
+	})
+	if err != nil && !alreadyExists(err) {
+		return fmt.Errorf("creating log group %s: %w", name, err)
+	}
+
+	// Set retention to 60 days.
+	_, err = p.cw.PutRetentionPolicy(ctx, &cloudwatchlogs.PutRetentionPolicyInput{
+		LogGroupName:    ptr(name),
+		RetentionInDays: aws.Int32(60),
+	})
+	if err != nil {
+		return fmt.Errorf("setting retention on %s: %w", name, err)
+	}
+
+	return nil
+}
+
+func (p *Provider) deleteLogGroup(ctx context.Context) error {
+	_, err := p.cw.DeleteLogGroup(ctx, &cloudwatchlogs.DeleteLogGroupInput{
+		LogGroupName: ptr(p.logGroupName()),
+	})
+	if isNotFound(err) || isLogGroupNotFound(err) {
+		return nil
+	}
+	return err
+}
+
+// isLogGroupNotFound detects CloudWatch Logs ResourceNotFoundException.
+func isLogGroupNotFound(err error) bool {
+	if err == nil {
+		return false
+	}
+	var notFound *cwltypes.ResourceNotFoundException
+	return contains(err.Error(), "ResourceNotFoundException") || errors.As(err, &notFound)
+}
+
 // ── EventBridge ─────────────────────────────────────────────────────────
 
 func (p *Provider) ensureEventRule(ctx context.Context, queueArn string, repoNames []string) error {
@@ -350,7 +415,8 @@ func (p *Provider) ensureEventRule(ctx context.Context, queueArn string, repoNam
 		EventPattern: ptr(pattern),
 		State:        ebtypes.RuleStateEnabled,
 		Tags: []ebtypes.Tag{
-			{Key: ptr("managed-by"), Value: ptr("flux2-ecr-webhook")},
+			{Key: ptr(managedByTag), Value: ptr(managedByValue)},
+			{Key: ptr(typeTagKey), Value: ptr("event-rule")},
 		},
 	})
 	if err != nil {

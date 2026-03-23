@@ -22,8 +22,12 @@ type Config struct {
 	AWSLambdaRuntime  string
 	AWSLambdaTimeout  int32
 	AWSSQSName        string
-	AWSAppName        string
-	ResyncInterval    string
+	AWSAppName                   string
+	AWSManageInfra               bool
+	AWSExistingRepoMappingSecret string
+	AWSExistingSQSQueue          string
+	AWSExistingEventRule         string
+	ResyncInterval               string
 }
 
 // FromEnv builds a Config by reading environment variables.
@@ -42,8 +46,12 @@ func FromEnv() Config {
 		AWSLambdaRuntime:  getEnv("AWS_LAMBDA_RUNTIME", "python3.12"),
 		AWSLambdaTimeout:  parseInt32(getEnv("AWS_LAMBDA_TIMEOUT", "30")),
 		AWSSQSName:        getEnv("AWS_SQS_NAME", "flux-webhook-push-events"),
-		AWSAppName:        getEnv("AWS_APP_NAME", "flux-webhook"),
-		ResyncInterval:    getEnv("RESYNC_INTERVAL", "5m"),
+		AWSAppName:                   getEnv("AWS_APP_NAME", "flux-webhook"),
+		AWSManageInfra:               getEnv("AWS_MANAGE_INFRASTRUCTURE", "true") == "true",
+		AWSExistingRepoMappingSecret: getEnv("AWS_EXISTING_REPO_MAPPING_SECRET", ""),
+		AWSExistingSQSQueue:          getEnv("AWS_EXISTING_SQS_QUEUE", ""),
+		AWSExistingEventRule:         getEnv("AWS_EXISTING_EVENT_RULE", ""),
+		ResyncInterval:               getEnv("RESYNC_INTERVAL", "5m"),
 	}
 }
 

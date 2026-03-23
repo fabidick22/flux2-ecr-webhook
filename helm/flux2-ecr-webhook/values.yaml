@@ -84,9 +84,42 @@ cloudProvider: aws
 aws:
   # -- AWS region where resources are managed (e.g. us-east-1).
   region: ""
-  # -- IAM Role ARN for IRSA. Recommended over static credentials.
+  # -- IAM Role ARN for IRSA (IAM Roles for Service Accounts).
+  # The controller uses this role to create and manage all AWS resources
+  # (Lambda, SQS, EventBridge, SecretsManager, IAM).
+  #
+  # Cross-account setup (e.g., ECR in a shared account, cluster in a workload account):
+  #   1. Register your EKS cluster's OIDC provider as an IAM Identity Provider
+  #      in the target account (where ECR repos live).
+  #   2. Create an IAM role in the target account with a trust policy for the
+  #      OIDC provider and permissions for IAM, Lambda, SQS, EventBridge,
+  #      SecretsManager, and CloudWatch Logs.
+  #   3. Set irsaRoleArn to the target account role ARN.
+  #   All resources will be created in the target account, and EventBridge will
+  #   natively capture ECR push events without cross-account forwarding.
+  #
   # Leave empty if using node instance profile or kube2iam.
   irsaRoleArn: ""
+  # -- When true (default), the controller creates and manages all AWS resources
+  # (Lambda, SQS, EventBridge, SecretsManager, IAM, CloudWatch Log Group).
+  # Set to false when you manage infrastructure externally (e.g. Terraform, CDK).
+  # In that mode the controller only updates the repo-mapping secret and
+  # EventBridge rule filter — all resources must already exist.
+  #
+  # Multi-environment example: deploy with manageInfrastructure=true on one
+  # cluster and manageInfrastructure=false on all others that share the same
+  # AWS resources.
+  manageInfrastructure: true
+  # -- Explicit resource references (used when manageInfrastructure is false).
+  # If empty, the controller discovers resources by tags
+  # (managed-by=flux2-webhook) or falls back to the naming convention.
+  existingResources:
+    # -- SecretsManager secret name that stores the repo mapping.
+    repoMappingSecretName: ""
+    # -- SQS queue name for ECR push events.
+    sqsQueueName: ""
+    # -- EventBridge rule name for ECR push events.
+    eventRuleName: ""
   resources:
     lambda:
       # -- Lambda function name to create/update.

@@ -19,4 +19,8 @@ data:
   AWS_LAMBDA_TIMEOUT: {{ .Values.aws.resources.lambda.timeout | quote }}
   AWS_SQS_NAME: {{ .Values.aws.resources.sqs.name | quote }}
   AWS_APP_NAME: {{ .Values.aws.resources.appName | quote }}
+  AWS_MANAGE_INFRASTRUCTURE: {{ .Values.aws.manageInfrastructure | quote }}
+  AWS_EXISTING_REPO_MAPPING_SECRET: {{ .Values.aws.existingResources.repoMappingSecretName | quote }}
+  AWS_EXISTING_SQS_QUEUE: {{ .Values.aws.existingResources.sqsQueueName | quote }}
+  AWS_EXISTING_EVENT_RULE: {{ .Values.aws.existingResources.eventRuleName | quote }}
   EXCLUDE_ANNOTATION: {{ .Values.excludeAnnotation | quote }}

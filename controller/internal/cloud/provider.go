@@ -12,6 +12,11 @@ import (
 // CloudProvider abstracts the cloud operations needed by the controller.
 // Implementations exist for AWS; GCP and Azure are planned.
 type CloudProvider interface {
+	// Validate checks the cloud identity and, when infrastructure is managed
+	// externally, verifies that the required resources exist and are accessible.
+	// Should be called at startup before the reconciler starts.
+	Validate(ctx context.Context) error
+
 	// EnsureInfrastructure creates all cloud resources if they don't already
 	// exist (Lambda, SQS, IAM, EventBridge rule, SecretsManager secret).
 	// Must be idempotent.

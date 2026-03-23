@@ -83,8 +83,11 @@ func (r *ImageRepositorySyncReconciler) Reconcile(ctx context.Context, req ctrl.
 	logger.Info("discovery complete", "managedRepos", len(repos), "withReceivers", matched, "withoutReceivers", skipped, "ecrRepos", len(repoMapping))
 
 	// 4. Ensure cloud infrastructure exists (runs once, retries on failure).
-	if err := r.ensureInfraOnce(ctx); err != nil {
-		return ctrl.Result{}, err
+	//    Skipped when manageInfrastructure is false (infra managed externally).
+	if r.Config.AWSManageInfra {
+		if err := r.ensureInfraOnce(ctx); err != nil {
+			return ctrl.Result{}, err
+		}
 	}
 
 	// 5. Sync the repo mapping and EventBridge filter to the cloud.

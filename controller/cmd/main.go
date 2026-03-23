@@ -61,15 +61,23 @@ func main() {
 		"fluxNamespace", cfg.FluxNamespace,
 		"webhookBaseURL", cfg.WebhookBaseURL,
 		"cloudProvider", cfg.CloudProvider,
+		"manageInfrastructure", cfg.AWSManageInfra,
 		"scanAllNamespaces", cfg.ScanAllNamespaces,
 		"excludeNamespaces", cfg.ExcludeNamespaces,
 		"resyncInterval", effectiveResync,
 	)
 
 	// Initialize cloud provider.
-	provider, err := newCloudProvider(context.Background(), cfg)
+	ctx := context.Background()
+	provider, err := newCloudProvider(ctx, cfg)
 	if err != nil {
 		setupLog.Error(err, "unable to create cloud provider")
+		os.Exit(1)
+	}
+
+	// Validate AWS identity and resource accessibility.
+	if err := provider.Validate(ctx); err != nil {
+		setupLog.Error(err, "cloud provider validation failed")
 		os.Exit(1)
 	}
 
@@ -116,12 +124,16 @@ func newCloudProvider(ctx context.Context, cfg config.Config) (cloud.CloudProvid
 	switch cfg.CloudProvider {
 	case "aws":
 		return aws.NewProvider(ctx, aws.Config{
-			Region:        cfg.AWSRegion,
-			AppName:       cfg.AWSAppName,
-			LambdaName:    cfg.AWSLambdaName,
-			LambdaRuntime: cfg.AWSLambdaRuntime,
-			LambdaTimeout: cfg.AWSLambdaTimeout,
-			SQSName:       cfg.AWSSQSName,
+			Region:                    cfg.AWSRegion,
+			AppName:                   cfg.AWSAppName,
+			LambdaName:                cfg.AWSLambdaName,
+			LambdaRuntime:             cfg.AWSLambdaRuntime,
+			LambdaTimeout:             cfg.AWSLambdaTimeout,
+			SQSName:                   cfg.AWSSQSName,
+			ManageInfra:               cfg.AWSManageInfra,
+			ExistingRepoMappingSecret: cfg.AWSExistingRepoMappingSecret,
+			ExistingSQSQueue:          cfg.AWSExistingSQSQueue,
+			ExistingEventRule:         cfg.AWSExistingEventRule,
 		})
 	default:
 		return nil, fmt.Errorf("unsupported cloud provider: %s", cfg.CloudProvider)
