@@ -1,3 +1,9 @@
+# [2.0.0-beta.11](https://github.com/fabidick22/flux2-ecr-webhook/compare/v2.0.0-beta.10...v2.0.0-beta.11) (2026-03-23)
+
+### Improvements
+
+- add detailed discovery logging for debugging ([a24eb69](https://github.com/fabidick22/flux2-ecr-webhook/commit/a24eb69f608c084580a6236336dc97bc949859f3))
+
 # [2.0.0-beta.10](https://github.com/fabidick22/flux2-ecr-webhook/compare/v2.0.0-beta.9...v2.0.0-beta.10) (2026-03-23)
 
 ### Bug Fixes
