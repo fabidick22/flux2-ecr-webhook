@@ -524,6 +524,7 @@ func alreadyExists(err error) bool {
 	msg := err.Error()
 	for _, code := range []string{
 		"ResourceExistsException",
+		"ResourceAlreadyExistsException",
 		"EntityAlreadyExists",
 		"QueueAlreadyExists",
 		"ResourceConflictException",
@@ -573,6 +574,15 @@ func isInvalidParameterValue(err error) bool {
 		return false
 	}
 	return contains(err.Error(), "InvalidParameterValueException")
+}
+
+// isResourceConflict detects Lambda's ResourceConflictException,
+// returned when an update is already in progress.
+func isResourceConflict(err error) bool {
+	if err == nil {
+		return false
+	}
+	return contains(err.Error(), "ResourceConflictException")
 }
 
 // ptr returns a pointer to the given string.

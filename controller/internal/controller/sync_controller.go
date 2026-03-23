@@ -192,11 +192,12 @@ func (r *ImageRepositorySyncReconciler) SetupWithManager(mgr ctrl.Manager) error
 
 // receiverToImageRepos maps a Receiver change to the ImageRepository reconcile
 // requests it should trigger.
-func (r *ImageRepositorySyncReconciler) receiverToImageRepos(_ context.Context, obj client.Object) []reconcile.Request {
+func (r *ImageRepositorySyncReconciler) receiverToImageRepos(ctx context.Context, obj client.Object) []reconcile.Request {
 	receiver, ok := obj.(*notificationv1.Receiver)
 	if !ok {
 		return nil
 	}
+	logger := log.FromContext(ctx).WithName("watch")
 
 	var requests []reconcile.Request
 	for _, res := range receiver.Spec.Resources {
@@ -211,12 +212,18 @@ func (r *ImageRepositorySyncReconciler) receiverToImageRepos(_ context.Context, 
 			NamespacedName: types.NamespacedName{Name: res.Name, Namespace: ns},
 		})
 	}
+
+	if len(requests) > 0 {
+		logger.Info("Receiver changed, triggering reconcile",
+			"receiver", receiver.Name, "namespace", receiver.Namespace,
+			"imageRepos", len(requests))
+	}
 	return requests
 }
 
 // policyToImageRepo maps an ImagePolicy change to the ImageRepository it
 // references, so that a changed tag filter is picked up immediately.
-func (r *ImageRepositorySyncReconciler) policyToImageRepo(_ context.Context, obj client.Object) []reconcile.Request {
+func (r *ImageRepositorySyncReconciler) policyToImageRepo(ctx context.Context, obj client.Object) []reconcile.Request {
 	policy, ok := obj.(*imagev1beta2.ImagePolicy)
 	if !ok {
 		return nil
@@ -227,6 +234,12 @@ func (r *ImageRepositorySyncReconciler) policyToImageRepo(_ context.Context, obj
 	if ns == "" {
 		ns = policy.Namespace
 	}
+
+	logger := log.FromContext(ctx).WithName("watch")
+	logger.Info("ImagePolicy changed, triggering reconcile",
+		"policy", policy.Name, "namespace", policy.Namespace,
+		"imageRepo", ref.Name)
+
 	return []reconcile.Request{
 		{NamespacedName: types.NamespacedName{Name: ref.Name, Namespace: ns}},
 	}

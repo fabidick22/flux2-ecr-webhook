@@ -261,11 +261,20 @@ func (p *Provider) ensureLambda(ctx context.Context, roleArn, queueArn string) e
 		FunctionName: ptr(p.cfg.LambdaName),
 	})
 	if err == nil {
-		// Update existing function code.
-		if _, err = p.lm.UpdateFunctionCode(ctx, &lambda.UpdateFunctionCodeInput{
-			FunctionName: ptr(p.cfg.LambdaName),
-			ZipFile:      zipData,
-		}); err != nil {
+		// Update existing function code. Retry on ResourceConflictException
+		// which occurs when a previous update is still in progress.
+		for attempt := 0; attempt < 4; attempt++ {
+			_, err = p.lm.UpdateFunctionCode(ctx, &lambda.UpdateFunctionCodeInput{
+				FunctionName: ptr(p.cfg.LambdaName),
+				ZipFile:      zipData,
+			})
+			if err == nil {
+				break
+			}
+			if isResourceConflict(err) && attempt < 3 {
+				time.Sleep(5 * time.Second)
+				continue
+			}
 			return err
 		}
 	} else if isNotFound(err) {
