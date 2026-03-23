@@ -1,3 +1,9 @@
+# [2.0.0-beta.12](https://github.com/fabidick22/flux2-ecr-webhook/compare/v2.0.0-beta.11...v2.0.0-beta.12) (2026-03-23)
+
+### Features
+
+- add manageInfrastructure toggle, tag discovery, and cross-account validation ([50361f8](https://github.com/fabidick22/flux2-ecr-webhook/commit/50361f853106368b46693882d622ea9a6bbd90f6))
+
 # [2.0.0-beta.11](https://github.com/fabidick22/flux2-ecr-webhook/compare/v2.0.0-beta.10...v2.0.0-beta.11) (2026-03-23)
 
 ### Improvements
