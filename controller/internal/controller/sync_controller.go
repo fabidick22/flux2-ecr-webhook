@@ -61,20 +61,26 @@ func (r *ImageRepositorySyncReconciler) Reconcile(ctx context.Context, req ctrl.
 	}
 
 	var allInfos []discovery.ImageInfo
+	var matched, skipped int
 	for i := range repos {
 		infos, err := disc.DiscoverForImageRepository(ctx, &repos[i])
 		if err != nil {
-			// Log and continue — a single bad repo should not block all others.
-			logger.Error(err, "skipping ImageRepository due to discovery error",
+			logger.Error(err, "discovery error for ImageRepository",
 				"name", repos[i].Name, "namespace", repos[i].Namespace)
+			skipped++
 			continue
+		}
+		if len(infos) == 0 {
+			skipped++
+		} else {
+			matched++
 		}
 		allInfos = append(allInfos, infos...)
 	}
 
 	// 3. Build the complete repo_mapping from all discovered data.
 	repoMapping := mapping.Build(allInfos)
-	logger.Info("repo mapping built", "ecrRepos", len(repoMapping))
+	logger.Info("discovery complete", "managedRepos", len(repos), "withReceivers", matched, "withoutReceivers", skipped, "ecrRepos", len(repoMapping))
 
 	// 4. Ensure cloud infrastructure exists (runs once, retries on failure).
 	if err := r.ensureInfraOnce(ctx); err != nil {

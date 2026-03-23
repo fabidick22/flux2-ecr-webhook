@@ -47,28 +47,30 @@ type FluxDiscovery struct {
 // DiscoverForImageRepository returns all ImageInfo entries for the given
 // ImageRepository by cross-referencing its associated Receivers and ImagePolicies.
 func (d *FluxDiscovery) DiscoverForImageRepository(ctx context.Context, repo *imagev1beta2.ImageRepository) ([]ImageInfo, error) {
-	logger := log.FromContext(ctx).WithValues("imageRepository", repo.Name, "namespace", repo.Namespace)
+	logger := log.FromContext(ctx).WithValues("imageRepo", repo.Name, "namespace", repo.Namespace)
 
 	ecrRepoName, err := extractECRRepoName(repo.Spec.Image)
 	if err != nil {
-		return nil, err
+		logger.Info("skipping non-ECR image", "image", repo.Spec.Image, "reason", err.Error())
+		return nil, nil
 	}
+	logger = logger.WithValues("ecrRepo", ecrRepoName)
 
 	receivers, err := d.findReceiversForRepo(ctx, repo.Name, repo.Namespace)
 	if err != nil {
 		return nil, fmt.Errorf("listing receivers for %s/%s: %w", repo.Namespace, repo.Name, err)
 	}
 	if len(receivers) == 0 {
-		logger.V(1).Info("no Receivers reference this ImageRepository, skipping")
+		logger.Info("no Receiver references this ImageRepository — create a Receiver with spec.resources[].kind=ImageRepository targeting this repo")
 		return nil, nil
 	}
+	logger.Info("found matching Receivers", "receivers", len(receivers))
 
 	policies, err := d.findPoliciesForRepo(ctx, repo.Name, repo.Namespace)
 	if err != nil {
 		return nil, fmt.Errorf("listing image policies for %s: %w", repo.Name, err)
 	}
 
-	// Build the regex from the first matching ImagePolicy (most repos have one).
 	regex := extractRegex(policies)
 
 	var results []ImageInfo
@@ -77,7 +79,7 @@ func (d *FluxDiscovery) DiscoverForImageRepository(ctx context.Context, repo *im
 
 		webhookURLs := d.buildWebhookURLs(r)
 		if len(webhookURLs) == 0 {
-			logger.Info("Receiver has no WebhookPath yet (pending?), skipping", "receiver", r.Name)
+			logger.Info("Receiver has no status.webhookPath yet (not reconciled by notification-controller?)", "receiver", r.Name)
 			continue
 		}
 
@@ -86,6 +88,7 @@ func (d *FluxDiscovery) DiscoverForImageRepository(ctx context.Context, repo *im
 			return nil, fmt.Errorf("reading token for receiver %s/%s: %w", r.Namespace, r.Name, err)
 		}
 
+		logger.Info("discovered webhook mapping", "receiver", r.Name, "webhooks", webhookURLs, "hasToken", token != "", "regex", regex)
 		results = append(results, ImageInfo{
 			ECRRepoName:  ecrRepoName,
 			WebhookURLs:  webhookURLs,
