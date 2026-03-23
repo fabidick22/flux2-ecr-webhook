@@ -1,3 +1,9 @@
+# [2.0.0-beta.10](https://github.com/fabidick22/flux2-ecr-webhook/compare/v2.0.0-beta.9...v2.0.0-beta.10) (2026-03-23)
+
+### Bug Fixes
+
+- handle recently deleted SQS queues and secrets on reinstall ([b5356b8](https://github.com/fabidick22/flux2-ecr-webhook/commit/b5356b8ed1da421d01e1ec4431b8dd2fc857a341))
+
 # [2.0.0-beta.9](https://github.com/fabidick22/flux2-ecr-webhook/compare/v2.0.0-beta.8...v2.0.0-beta.9) (2026-03-23)
 
 ### Bug Fixes
