@@ -1,3 +1,9 @@
+# [2.0.0-beta.16](https://github.com/fabidick22/flux2-ecr-webhook/compare/v2.0.0-beta.15...v2.0.0-beta.16) (2026-03-23)
+
+### Features
+
+- multi-cluster merge support and improved Lambda logging ([6533201](https://github.com/fabidick22/flux2-ecr-webhook/commit/6533201eecc21a50f2141e7fa94578bb8326b0bc))
+
 # [2.0.0-beta.15](https://github.com/fabidick22/flux2-ecr-webhook/compare/v2.0.0-beta.14...v2.0.0-beta.15) (2026-03-23)
 
 ### Improvements
