@@ -2,6 +2,8 @@ package aws
 
 import (
 	"testing"
+
+	"github.com/fabidick22/flux2-ecr-webhook/internal/mapping"
 )
 
 func TestBuildLambdaZip(t *testing.T) {
@@ -103,6 +105,72 @@ func TestNamingHelpers(t *testing.T) {
 	}
 	if got := p.tokenSecretName(); got != "my-app-token" {
 		t.Errorf("tokenSecretName() = %q", got)
+	}
+}
+
+func TestClusterID(t *testing.T) {
+	tests := []struct {
+		name string
+		url  string
+		want string
+	}{
+		{"with scheme and host", "https://gitops.stg.wokiapp.com", "gitops.stg.wokiapp.com"},
+		{"with path", "https://gitops.prod.wokiapp.com/some/path", "gitops.prod.wokiapp.com"},
+		{"with port", "https://flux.example.com:8443", "flux.example.com"},
+		{"empty url", "", ""},
+		{"http scheme", "http://flux.local", "flux.local"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			p := &Provider{cfg: Config{WebhookBaseURL: tt.url}}
+			if got := p.clusterID(); got != tt.want {
+				t.Errorf("clusterID() = %q, want %q", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestPrefixMapping(t *testing.T) {
+	t.Run("with cluster ID", func(t *testing.T) {
+		m := mapping.RepoMapping{
+			"repo-a": mapping.RepoEntry{
+				"recv-a": mapping.WebhookEntry{Webhook: []string{"https://stg/hook/a"}},
+			},
+		}
+		result := prefixMapping(m, "stg.example.com")
+		if _, ok := result["repo-a"]["stg.example.com::recv-a"]; !ok {
+			t.Error("expected prefixed key")
+		}
+		if _, ok := result["repo-a"]["recv-a"]; ok {
+			t.Error("unprefixed key should not exist")
+		}
+	})
+
+	t.Run("empty cluster ID returns original", func(t *testing.T) {
+		m := mapping.RepoMapping{
+			"repo-a": mapping.RepoEntry{
+				"recv-a": mapping.WebhookEntry{Webhook: []string{"https://stg/hook/a"}},
+			},
+		}
+		result := prefixMapping(m, "")
+		if _, ok := result["repo-a"]["recv-a"]; !ok {
+			t.Error("expected unprefixed key")
+		}
+	})
+}
+
+func TestCountEntries(t *testing.T) {
+	m := mapping.RepoMapping{
+		"repo-a": mapping.RepoEntry{
+			"recv-1": mapping.WebhookEntry{},
+			"recv-2": mapping.WebhookEntry{},
+		},
+		"repo-b": mapping.RepoEntry{
+			"recv-3": mapping.WebhookEntry{},
+		},
+	}
+	if got := countEntries(m); got != 3 {
+		t.Errorf("countEntries() = %d, want 3", got)
 	}
 }
 

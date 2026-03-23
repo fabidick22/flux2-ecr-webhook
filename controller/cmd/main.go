@@ -134,6 +134,7 @@ func newCloudProvider(ctx context.Context, cfg config.Config) (cloud.CloudProvid
 			ExistingRepoMappingSecret: cfg.AWSExistingRepoMappingSecret,
 			ExistingSQSQueue:          cfg.AWSExistingSQSQueue,
 			ExistingEventRule:         cfg.AWSExistingEventRule,
+			WebhookBaseURL:            cfg.WebhookBaseURL,
 		})
 	default:
 		return nil, fmt.Errorf("unsupported cloud provider: %s", cfg.CloudProvider)

@@ -1,25 +1,34 @@
 # flux2-ecr-webhook
 
-Automates calling Flux webhooks ([Receivers](https://fluxcd.io/flux/components/notification/receiver/)) when ECR `PUSH` events occur.
+Automates calling Flux webhooks ([Receivers](https://fluxcd.io/flux/components/notification/receiver/)) when container registry push events occur.
 
-## v2 — Kubernetes Controller (current)
+> Cloud-agnostic design ([CloudProvider interface](controller/internal/cloud/provider.go)). Currently implemented and tested on **AWS** (ECR + EventBridge + SQS + Lambda).
 
-A Kubernetes-native controller that **automatically discovers** Flux resources (ImageRepository, ImagePolicy, Receiver) and keeps the AWS infrastructure in sync — no manual `repo_mapping` configuration required.
+## How it works
 
 ```mermaid
 graph LR
-  C[Controller] -->|watches| IR[ImageRepository]
-  C -->|cross-references| IP[ImagePolicy]
-  C -->|cross-references| R[Receiver]
-  C -->|builds| RM[repo_mapping]
-  RM -->|persists| SM[SecretsManager]
-  ECR -->|push event| EB[EventBridge]
-  EB --> SQS --> Lambda
-  Lambda -->|reads| SM
-  Lambda -->|calls| R
+  subgraph Kubernetes Cluster
+    C[Controller] -->|watches| IR[ImageRepository]
+    C -->|discovers| IP[ImagePolicy]
+    C -->|discovers| R[Receiver]
+  end
+  C -->|sync mapping| SS[Secret Store]
+  REG[Container Registry] -->|push event| EV[Cloud Events]
+  EV --> Q[Queue] --> FN[Serverless Function]
+  FN -->|reads mapping| SS
+  FN -->|POST webhook| R
 ```
 
-### Install
+> **AWS:** ECR → EventBridge → SQS → Lambda → SecretsManager
+
+1. The controller watches all `ImageRepository` resources in the cluster
+2. For each one, it cross-references `Receiver` and `ImagePolicy` resources
+3. It builds the `repo_mapping` structure automatically (webhook URLs, tokens, tag regex)
+4. The mapping is persisted to the cloud secret store for the serverless function to consume
+5. On a registry push event, the function reads the mapping and calls the matching Flux webhooks
+
+## Install
 
 ```bash
 helm install flux2-ecr-webhook ./helm/flux2-ecr-webhook \
@@ -29,14 +38,7 @@ helm install flux2-ecr-webhook ./helm/flux2-ecr-webhook \
   --set aws.irsaRoleArn=arn:aws:iam::123456789012:role/my-role
 ```
 
-### How it works
-
-1. The controller watches all `ImageRepository` resources in the cluster
-2. For each one, it cross-references `Receiver` and `ImagePolicy` resources
-3. It builds the `repo_mapping` structure automatically (webhook URLs, tokens, tag regex)
-4. The mapping is persisted to AWS SecretsManager for the Lambda to consume
-
-### Configuration
+## Configuration
 
 | Value | Description | Default |
 |-------|-------------|---------|
@@ -46,10 +48,110 @@ helm install flux2-ecr-webhook ./helm/flux2-ecr-webhook \
 | `scan.excludeNamespaces` | Namespaces to skip | `[kube-system, kube-public, kube-node-lease]` |
 | `aws.region` | AWS region | `""` |
 | `aws.irsaRoleArn` | IAM Role ARN for IRSA on EKS | `""` |
+| `aws.manageInfrastructure` | Create and manage cloud resources automatically | `true` |
+| `aws.appName` | Prefix for cloud resource names (useful for isolation) | `flux2-ecr-webhook` |
 | `controller.resyncInterval` | Periodic resync interval | `5m` |
 | `excludeAnnotation` | Annotation to exclude a repo | `ecr-webhook.io/skip` |
 
-To exclude a specific ImageRepository:
+## Deployment Modes
+
+### Single Cluster (default)
+
+One cluster, one set of cloud resources. No extra configuration needed.
+
+```bash
+helm install flux2-ecr-webhook ./helm/flux2-ecr-webhook \
+  --namespace flux-system \
+  --set flux.webhookBaseURL=https://flux.example.com \
+  --set aws.region=us-east-1 \
+  --set aws.irsaRoleArn=arn:aws:iam::123456789012:role/my-role
+```
+
+### Multi-Cluster (shared cloud account)
+
+Multiple clusters sharing the same cloud account and resources. Each controller automatically identifies itself using the `webhookBaseURL` hostname — no extra configuration required.
+
+```mermaid
+graph TB
+  subgraph STG Account
+    subgraph STG Cluster
+      C1[Controller STG]
+    end
+  end
+  subgraph PROD Account
+    subgraph PROD Cluster
+      C2[Controller PROD]
+    end
+  end
+  subgraph Shared Account
+    ECR -->|push event| EB[EventBridge]
+    EB --> SQS --> Lambda
+    SS[SecretsManager<br/>merged mapping]
+    Lambda -->|reads| SS
+  end
+  C1 -->|merge own entries| SS
+  C2 -->|merge own entries| SS
+  Lambda -->|regex match?| W1[STG Flux Receiver]
+  Lambda -->|regex match?| W2[PROD Flux Receiver]
+```
+
+> Example uses AWS terminology. The concept applies to any supported cloud provider (GCP projects, Azure subscriptions, etc.).
+
+Each controller uses a **read → merge → write** cycle so entries from other clusters are preserved. The mapping keys are automatically prefixed with the cluster identity:
+
+```json
+{
+  "my-app": {
+    "flux.stg.example.com::my-app-receiver": {
+      "webhook": ["https://flux.stg.example.com/hook/abc123"],
+      "token": "stg-token",
+      "regex": "^stg-.*"
+    },
+    "flux.prod.example.com::my-app-receiver": {
+      "webhook": ["https://flux.prod.example.com/hook/xyz789"],
+      "token": "prod-token",
+      "regex": "^prod-.*"
+    }
+  }
+}
+```
+
+Install on each cluster — only `webhookBaseURL` and `irsaRoleArn` differ:
+
+```bash
+# STG cluster
+helm install flux2-ecr-webhook ./helm/flux2-ecr-webhook \
+  --namespace flux-system \
+  --set flux.webhookBaseURL=https://flux.stg.example.com \
+  --set aws.region=us-east-1 \
+  --set aws.irsaRoleArn=arn:aws:iam::123456789012:role/stg-role
+
+# PROD cluster
+helm install flux2-ecr-webhook ./helm/flux2-ecr-webhook \
+  --namespace flux-system \
+  --set flux.webhookBaseURL=https://flux.prod.example.com \
+  --set aws.region=us-east-1 \
+  --set aws.irsaRoleArn=arn:aws:iam::123456789012:role/prod-role
+```
+
+If you ever reach the secret size limit (64 KB, unlikely for most setups), use `aws.appName` to create a separate set of cloud resources for additional clusters.
+
+### External Infrastructure
+
+Set `aws.manageInfrastructure=false` when you manage cloud resources externally (Terraform, CDK, etc.). The controller will only sync the mapping and event filters.
+
+```bash
+helm install flux2-ecr-webhook ./helm/flux2-ecr-webhook \
+  --namespace flux-system \
+  --set flux.webhookBaseURL=https://flux.example.com \
+  --set aws.region=us-east-1 \
+  --set aws.manageInfrastructure=false \
+  --set aws.irsaRoleArn=arn:aws:iam::123456789012:role/my-role
+```
+
+## Exclude a Repository
+
+Add the exclusion annotation to skip a specific ImageRepository:
 
 ```yaml
 apiVersion: image.toolkit.fluxcd.io/v1beta2
@@ -59,6 +161,14 @@ metadata:
   annotations:
     ecr-webhook.io/skip: "true"
 ```
+
+## Cloud Provider Support
+
+| Provider | Status |
+|----------|--------|
+| AWS (ECR) | Implemented and tested |
+| GCP (Artifact Registry) | Planned |
+| Azure (ACR) | Planned |
 
 ---
 

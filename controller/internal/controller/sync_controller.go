@@ -214,7 +214,7 @@ func (r *ImageRepositorySyncReconciler) receiverToImageRepos(ctx context.Context
 	}
 
 	if len(requests) > 0 {
-		logger.Info("Receiver changed, triggering reconcile",
+		logger.V(1).Info("Receiver changed, triggering reconcile",
 			"receiver", receiver.Name, "namespace", receiver.Namespace,
 			"imageRepos", len(requests))
 	}
@@ -236,7 +236,7 @@ func (r *ImageRepositorySyncReconciler) policyToImageRepo(ctx context.Context, o
 	}
 
 	logger := log.FromContext(ctx).WithName("watch")
-	logger.Info("ImagePolicy changed, triggering reconcile",
+	logger.V(1).Info("ImagePolicy changed, triggering reconcile",
 		"policy", policy.Name, "namespace", policy.Namespace,
 		"imageRepo", ref.Name)
 

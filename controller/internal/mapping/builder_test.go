@@ -126,3 +126,39 @@ func TestBuild(t *testing.T) {
 		}
 	})
 }
+
+func TestBuildWithClusterID(t *testing.T) {
+	t.Run("keys have cluster prefix", func(t *testing.T) {
+		infos := []discovery.ImageInfo{
+			{
+				ECRRepoName:  "my-repo",
+				WebhookURLs:  []string{"https://flux.example.com/hook/abc"},
+				Token:        "token",
+				ReceiverName: "receiver-prod",
+			},
+		}
+		result := BuildWithClusterID(infos, "gitops.stg.example.com")
+		entry := result["my-repo"]
+		if _, ok := entry["gitops.stg.example.com::receiver-prod"]; !ok {
+			t.Error("expected prefixed key 'gitops.stg.example.com::receiver-prod'")
+		}
+		if _, ok := entry["receiver-prod"]; ok {
+			t.Error("unprefixed key should not exist")
+		}
+	})
+
+	t.Run("empty clusterID has no prefix", func(t *testing.T) {
+		infos := []discovery.ImageInfo{
+			{
+				ECRRepoName:  "my-repo",
+				WebhookURLs:  []string{"https://flux.example.com/hook/abc"},
+				ReceiverName: "receiver-prod",
+			},
+		}
+		result := BuildWithClusterID(infos, "")
+		entry := result["my-repo"]
+		if _, ok := entry["receiver-prod"]; !ok {
+			t.Error("expected unprefixed key 'receiver-prod'")
+		}
+	})
+}

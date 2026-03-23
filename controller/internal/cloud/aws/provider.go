@@ -8,6 +8,7 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"sync"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -56,6 +57,9 @@ type Config struct {
 	ExistingRepoMappingSecret string
 	ExistingSQSQueue          string
 	ExistingEventRule         string
+
+	// WebhookBaseURL is used to derive the cluster ID for multi-cluster merge.
+	WebhookBaseURL string
 }
 
 // resolvedNames holds the actual resource names used by SyncMapping,
@@ -276,7 +280,9 @@ func (p *Provider) EnsureInfrastructure(ctx context.Context) error {
 }
 
 // SyncMapping updates the repo_mapping secret and EventBridge rule filter.
-// Skips AWS API calls when the mapping has not changed since the last sync.
+// In multi-cluster mode, it performs a read-merge-write cycle so that each
+// controller only manages its own entries (identified by cluster ID prefix)
+// while preserving entries from other clusters.
 func (p *Provider) SyncMapping(ctx context.Context, repoMapping mapping.RepoMapping) error {
 	logger := log.FromContext(ctx).WithName("aws")
 
@@ -285,28 +291,49 @@ func (p *Provider) SyncMapping(ctx context.Context, repoMapping mapping.RepoMapp
 		return fmt.Errorf("resolving resource names: %w", err)
 	}
 
-	data, err := json.Marshal(repoMapping)
+	cID := p.clusterID()
+
+	// Prefix local entries with cluster ID.
+	local := prefixMapping(repoMapping, cID)
+
+	// Read current mapping from secret store for merge.
+	currentSecret, err := p.readSecret(ctx, p.resolved.repoMappingSecret)
 	if err != nil {
-		return fmt.Errorf("marshalling repo mapping: %w", err)
+		return fmt.Errorf("reading current repo mapping: %w", err)
 	}
 
-	// Skip sync when mapping is unchanged.
-	currentJSON := string(data)
-	if currentJSON == p.lastMappingJSON {
-		logger.V(1).Info("mapping unchanged, skipping sync", "ecrRepos", len(repoMapping))
+	var existing mapping.RepoMapping
+	if currentSecret != "" && currentSecret != "{}" {
+		if err := json.Unmarshal([]byte(currentSecret), &existing); err != nil {
+			logger.Info("could not parse existing mapping, starting fresh", "error", err.Error())
+			existing = make(mapping.RepoMapping)
+		}
+	} else {
+		existing = make(mapping.RepoMapping)
+	}
+
+	// Merge: remove own entries, add current entries, preserve other clusters.
+	merged := mapping.MergeMapping(existing, local, cID)
+
+	data, err := json.Marshal(merged)
+	if err != nil {
+		return fmt.Errorf("marshalling merged repo mapping: %w", err)
+	}
+
+	// Skip sync when merged mapping is unchanged.
+	mergedJSON := string(data)
+	if mergedJSON == p.lastMappingJSON {
+		logger.V(1).Info("mapping unchanged, skipping sync", "ecrRepos", len(merged))
 		return nil
 	}
 
-	// Persist mapping to SecretsManager.
-	if err := p.updateSecret(ctx, p.resolved.repoMappingSecret, currentJSON); err != nil {
+	// Persist merged mapping to SecretsManager.
+	if err := p.updateSecret(ctx, p.resolved.repoMappingSecret, mergedJSON); err != nil {
 		return fmt.Errorf("updating repo mapping secret: %w", err)
 	}
 
-	// Update EventBridge filter with discovered ECR repo names.
-	repoNames := make([]string, 0, len(repoMapping))
-	for name := range repoMapping {
-		repoNames = append(repoNames, name)
-	}
+	// Update EventBridge filter with ALL repo names from merged mapping.
+	repoNames := mapping.ExtractRepoNames(merged)
 
 	_, queueArn, err := p.getQueueInfoByName(ctx, p.resolved.sqsQueue)
 	if err != nil {
@@ -317,8 +344,14 @@ func (p *Provider) SyncMapping(ctx context.Context, repoMapping mapping.RepoMapp
 		return fmt.Errorf("updating EventBridge rule: %w", err)
 	}
 
-	p.lastMappingJSON = currentJSON
-	logger.Info("mapping synced", "ecrRepos", len(repoMapping), "repos", repoNames)
+	p.lastMappingJSON = mergedJSON
+	logger.Info("mapping synced",
+		"clusterID", cID,
+		"ecrRepos", len(merged),
+		"repos", repoNames,
+		"localEntries", countEntries(local),
+		"totalEntries", countEntries(merged),
+	)
 
 	return nil
 }
@@ -371,6 +404,62 @@ func (p *Provider) eventTargetID() string          { return p.cfg.AppName + "-sq
 func (p *Provider) repoMappingSecretName() string  { return p.cfg.AppName + "-repo-mapping" }
 func (p *Provider) tokenSecretName() string        { return p.cfg.AppName + "-token" }
 func (p *Provider) logGroupName() string           { return "/aws/lambda/" + p.cfg.LambdaName }
+
+// clusterID extracts the hostname from WebhookBaseURL to use as cluster identifier.
+// Returns empty string if WebhookBaseURL is not set or cannot be parsed.
+func (p *Provider) clusterID() string {
+	if p.cfg.WebhookBaseURL == "" {
+		return ""
+	}
+	u, err := url.Parse(p.cfg.WebhookBaseURL)
+	if err != nil || u.Host == "" {
+		return ""
+	}
+	return u.Hostname()
+}
+
+// readSecret reads the current value of a SecretsManager secret.
+// Returns empty string if the secret doesn't exist or has no value.
+func (p *Provider) readSecret(ctx context.Context, name string) (string, error) {
+	out, err := p.sm.GetSecretValue(ctx, &secretsmanager.GetSecretValueInput{
+		SecretId: ptr(name),
+	})
+	if err != nil {
+		if isNotFound(err) {
+			return "", nil
+		}
+		return "", err
+	}
+	if out.SecretString == nil {
+		return "", nil
+	}
+	return *out.SecretString, nil
+}
+
+// prefixMapping re-keys a RepoMapping by adding the cluster ID prefix to each receiver key.
+func prefixMapping(m mapping.RepoMapping, clusterID string) mapping.RepoMapping {
+	if clusterID == "" {
+		return m
+	}
+	result := make(mapping.RepoMapping, len(m))
+	for repo, entries := range m {
+		newEntries := make(mapping.RepoEntry, len(entries))
+		for k, v := range entries {
+			newEntries[clusterID+mapping.KeySeparator+k] = v
+		}
+		result[repo] = newEntries
+	}
+	return result
+}
+
+// countEntries returns the total number of webhook entries across all repos.
+func countEntries(m mapping.RepoMapping) int {
+	count := 0
+	for _, entries := range m {
+		count += len(entries)
+	}
+	return count
+}
 
 // getQueueInfoByName is like getQueueInfo but accepts an explicit queue name.
 func (p *Provider) getQueueInfoByName(ctx context.Context, queueName string) (string, string, error) {

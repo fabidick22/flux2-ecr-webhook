@@ -4,6 +4,10 @@ package mapping
 
 import "github.com/fabidick22/flux2-ecr-webhook/internal/discovery"
 
+// KeySeparator separates the cluster ID from the receiver name in mapping keys.
+// Example: "gitops.stg.example.com::api-admin-receiver"
+const KeySeparator = "::"
+
 // WebhookEntry mirrors the JSON structure expected by the Lambda function.
 //
 //	{
@@ -18,21 +22,27 @@ type WebhookEntry struct {
 }
 
 // RepoEntry maps a receiver name (ID) to its webhook configuration.
-// Matches the inner object of the Lambda's repo_mapping:
+// In multi-cluster mode, keys are prefixed with the cluster ID:
 //
-//	{ "<receiver-name>": WebhookEntry }
+//	{ "gitops.stg.example.com::receiver-name": WebhookEntry }
 type RepoEntry map[string]WebhookEntry
 
-// RepoMapping is the top-level structure persisted in AWS SecretsManager
-// and read by the Lambda function on every invocation.
+// RepoMapping is the top-level structure persisted in the cloud secret store
+// and read by the serverless function on every invocation.
 //
 //	{ "<ecr-repo-name>": RepoEntry }
 type RepoMapping map[string]RepoEntry
 
 // Build converts a flat slice of ImageInfo values (produced by the discovery
-// package) into a RepoMapping. Multiple ImageInfo entries for the same ECR
-// repo are merged under separate receiver-name keys.
+// package) into a RepoMapping without cluster ID prefixes.
 func Build(infos []discovery.ImageInfo) RepoMapping {
+	return BuildWithClusterID(infos, "")
+}
+
+// BuildWithClusterID converts ImageInfo values into a RepoMapping with receiver
+// keys prefixed by clusterID. When clusterID is empty, keys are unprefixed
+// (backward-compatible with single-cluster mode).
+func BuildWithClusterID(infos []discovery.ImageInfo, clusterID string) RepoMapping {
 	result := make(RepoMapping)
 
 	for _, info := range infos {
@@ -50,7 +60,11 @@ func Build(infos []discovery.ImageInfo) RepoMapping {
 			entry.Regex = info.Regex
 		}
 
-		result[info.ECRRepoName][info.ReceiverName] = entry
+		key := info.ReceiverName
+		if clusterID != "" {
+			key = clusterID + KeySeparator + info.ReceiverName
+		}
+		result[info.ECRRepoName][key] = entry
 	}
 
 	return result
