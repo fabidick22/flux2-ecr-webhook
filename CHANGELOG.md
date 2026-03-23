@@ -1,3 +1,9 @@
+# [2.0.0-beta.13](https://github.com/fabidick22/flux2-ecr-webhook/compare/v2.0.0-beta.12...v2.0.0-beta.13) (2026-03-23)
+
+### Bug Fixes
+
+- ensure SQS-Lambda event source mapping on every reconcile ([0a5de84](https://github.com/fabidick22/flux2-ecr-webhook/commit/0a5de840eb5cc68f54287ba8591e5cd2c37ce4bf))
+
 # [2.0.0-beta.12](https://github.com/fabidick22/flux2-ecr-webhook/compare/v2.0.0-beta.11...v2.0.0-beta.12) (2026-03-23)
 
 ### Features
