@@ -1,3 +1,87 @@
+# [2.0.0](https://github.com/fabidick22/flux2-ecr-webhook/compare/v1.2.0...v2.0.0) (2026-03-26)
+
+### Bug Fixes
+
+- ensure SQS-Lambda event source mapping on every reconcile ([0a5de84](https://github.com/fabidick22/flux2-ecr-webhook/commit/0a5de840eb5cc68f54287ba8591e5cd2c37ce4bf))
+- handle CloudWatch and Lambda conflict errors, add watch logging ([b1c667c](https://github.com/fabidick22/flux2-ecr-webhook/commit/b1c667c7cbb1f1278effd0bd685776d5cffb0ac3))
+- handle recently deleted SQS queues and secrets on reinstall ([b5356b8](https://github.com/fabidick22/flux2-ecr-webhook/commit/b5356b8ed1da421d01e1ec4431b8dd2fc857a341))
+- helm IRSA auto-annotation and values comment ([c34e49c](https://github.com/fabidick22/flux2-ecr-webhook/commit/c34e49cb75fe732230dbb8f8e1e490a67e53b625))
+- receiver namespace matching and add go.sum ([25d74a4](https://github.com/fabidick22/flux2-ecr-webhook/commit/25d74a4bdee0bf92e7355bc076955c27fd48950a))
+- retry Lambda creation on IAM role propagation delay ([8a90f73](https://github.com/fabidick22/flux2-ecr-webhook/commit/8a90f73d4c996a4b9dff0bf80f08b411cbea3c91))
+- use adaptive retry and allow infra setup retry on failure ([19ee83d](https://github.com/fabidick22/flux2-ecr-webhook/commit/19ee83dbfcb2756457ec0e3aaa565a41f0d4e170))
+
+### Build System
+
+- add Docker image publish job to semver workflow ([aa252f8](https://github.com/fabidick22/flux2-ecr-webhook/commit/aa252f8853a0de139d4bb2c9920dfc52916e3993))
+
+### Chores
+
+- **release:** v1.3.0-beta.1 ([b48001c](https://github.com/fabidick22/flux2-ecr-webhook/commit/b48001ca18aa5b3965cd8c614cbc6e4b635cde41))
+- **release:** v2.0.0-beta.1 ([8015c3b](https://github.com/fabidick22/flux2-ecr-webhook/commit/8015c3bb8fceb7ea83731a72905dc01f86e08917))
+- **release:** v2.0.0-beta.10 ([bec4864](https://github.com/fabidick22/flux2-ecr-webhook/commit/bec4864366ae1fa74f63a60925b64c5d56e94e52))
+- **release:** v2.0.0-beta.11 ([273f123](https://github.com/fabidick22/flux2-ecr-webhook/commit/273f12378e869c885d245feb8e0d4d139477d5ff))
+- **release:** v2.0.0-beta.12 ([5839429](https://github.com/fabidick22/flux2-ecr-webhook/commit/58394297ce178273869e28b58ba215ebef0497ee))
+- **release:** v2.0.0-beta.13 ([6a9a89a](https://github.com/fabidick22/flux2-ecr-webhook/commit/6a9a89a98ffdec16da735c135e9ac349746d2183))
+- **release:** v2.0.0-beta.14 ([5838205](https://github.com/fabidick22/flux2-ecr-webhook/commit/583820539851fec8562e4bee604d29d0aab85f97))
+- **release:** v2.0.0-beta.15 ([fba67dd](https://github.com/fabidick22/flux2-ecr-webhook/commit/fba67dddec3c4c2075baf7c32cbed4d0a1afbb99))
+- **release:** v2.0.0-beta.16 ([720c04f](https://github.com/fabidick22/flux2-ecr-webhook/commit/720c04ff07748fdead5c962a343e3ff79987917c))
+- **release:** v2.0.0-beta.2 ([bef8518](https://github.com/fabidick22/flux2-ecr-webhook/commit/bef85181f5c453c956a15f2d2801bfd0b2f60d60))
+- **release:** v2.0.0-beta.3 ([8d8cbd8](https://github.com/fabidick22/flux2-ecr-webhook/commit/8d8cbd888f3e42c5ea15950322f9cfe0725b9a51))
+- **release:** v2.0.0-beta.4 ([cccc6a6](https://github.com/fabidick22/flux2-ecr-webhook/commit/cccc6a6ca6de01b95c6f40dd9f22337d539a0713))
+- **release:** v2.0.0-beta.5 ([b8923d3](https://github.com/fabidick22/flux2-ecr-webhook/commit/b8923d3ee6ca6a74438134be89ac69a215a36f10))
+- **release:** v2.0.0-beta.6 ([42d48d6](https://github.com/fabidick22/flux2-ecr-webhook/commit/42d48d69e4d13043f86c1a811f859a08011f3d71))
+- **release:** v2.0.0-beta.7 ([3003742](https://github.com/fabidick22/flux2-ecr-webhook/commit/300374222efa978a80e7ec9c0c5788bf07b4af86))
+- **release:** v2.0.0-beta.8 ([11d1c1b](https://github.com/fabidick22/flux2-ecr-webhook/commit/11d1c1ba0f4d61d8c6b5f99797e27c294cca04a7))
+- **release:** v2.0.0-beta.9 ([4019499](https://github.com/fabidick22/flux2-ecr-webhook/commit/401949976ef2068869d21871ee7660d4306ccaf9))
+- trigger helm chart publish ([421ece8](https://github.com/fabidick22/flux2-ecr-webhook/commit/421ece802677ccef12f1bf1470546bfee3f9a64a))
+
+### Code Refactoring
+
+- use flux-webhook prefix for all cloud resources ([1786566](https://github.com/fabidick22/flux2-ecr-webhook/commit/1786566b9541b1969b9a5fc23155757074919e0e))
+
+### Continuous Integration
+
+- add helm chart release workflow ([ef7b8e5](https://github.com/fabidick22/flux2-ecr-webhook/commit/ef7b8e59ec090e77994996a99938181eff7c32ad))
+- add maintenance branch triggers to semver workflow ([95313cc](https://github.com/fabidick22/flux2-ecr-webhook/commit/95313cce3b3c6072591c4e7723b842c140193277))
+- publish helm chart to GHCR on release ([5141cbd](https://github.com/fabidick22/flux2-ecr-webhook/commit/5141cbd4df6265cc00e876ac4a5c57a3d917193b))
+
+### Documentation
+
+- update README for v2 ([54ededc](https://github.com/fabidick22/flux2-ecr-webhook/commit/54ededc740af01947627717d17dffc0cecfbd60f))
+
+### Features
+
+- add CloudProvider interface with AWS implementation and GCP/Azure stubs ([5f2b75b](https://github.com/fabidick22/flux2-ecr-webhook/commit/5f2b75b07d8b6eabc54e62f75dc00bfe1e77bd4e))
+- add manageInfrastructure toggle, tag discovery, and cross-account validation ([50361f8](https://github.com/fabidick22/flux2-ecr-webhook/commit/50361f853106368b46693882d622ea9a6bbd90f6))
+- add Phase 1 foundation for v2 controller ([ea94832](https://github.com/fabidick22/flux2-ecr-webhook/commit/ea948323064e1a4f340299f4480453165e1c68b7))
+- add pre-delete cleanup hook ([27aa81e](https://github.com/fabidick22/flux2-ecr-webhook/commit/27aa81e1a94c66d2dc97fb5178218835d02b18a6))
+- implement Phase 2 auto-discovery logic ([28c73d5](https://github.com/fabidick22/flux2-ecr-webhook/commit/28c73d577a907fb32cc38f34ab8ece3b1b425df8))
+- multi-cluster merge support and improved Lambda logging ([6533201](https://github.com/fabidick22/flux2-ecr-webhook/commit/6533201eecc21a50f2141e7fa94578bb8326b0bc))
+- wire CloudProvider into reconciler ([8ae5b04](https://github.com/fabidick22/flux2-ecr-webhook/commit/8ae5b04f9bf4cdbdbc9f6450c924a10123211d96))
+
+### Improvements
+
+- add detailed discovery logging for debugging ([a24eb69](https://github.com/fabidick22/flux2-ecr-webhook/commit/a24eb69f608c084580a6236336dc97bc949859f3))
+- reduce log verbosity and skip unchanged syncs ([f9da812](https://github.com/fabidick22/flux2-ecr-webhook/commit/f9da8129d1963c2928707824f7dd70548c21b7ed))
+
+### Other
+
+- Merge pull request #16 from fabidick22/beta ([6c2dd2d](https://github.com/fabidick22/flux2-ecr-webhook/commit/6c2dd2d41641b01cd927c2e39d060c9127e409cd)), closes [#16](https://github.com/fabidick22/flux2-ecr-webhook/issues/16)
+- Merge pull request #15 from fabidick22/feat/lifecycle-cleanup ([1142c0e](https://github.com/fabidick22/flux2-ecr-webhook/commit/1142c0e559bed1f4577fe50983366feff9fb4399)), closes [#15](https://github.com/fabidick22/flux2-ecr-webhook/issues/15)
+- Merge pull request #14 from fabidick22/feat/reconciler-sync ([64abf41](https://github.com/fabidick22/flux2-ecr-webhook/commit/64abf41e682cf4b12c0ce25d78650a9dc7a92730)), closes [#14](https://github.com/fabidick22/flux2-ecr-webhook/issues/14)
+- Merge pull request #13 from fabidick22/feat/cloud-provider ([4e129e5](https://github.com/fabidick22/flux2-ecr-webhook/commit/4e129e5577ba44c185c802468de6cd7dca4bd519)), closes [#13](https://github.com/fabidick22/flux2-ecr-webhook/issues/13)
+- feat!: v2 kubernetes controller replaces terraform module ([fb23497](https://github.com/fabidick22/flux2-ecr-webhook/commit/fb23497153e21dea513f03030668b4228371ef5f))
+- Merge branch 'claude/release-v2-branch-fa2ik' into beta ([365c045](https://github.com/fabidick22/flux2-ecr-webhook/commit/365c0452dcabb4dc61511ce78dbdd570508dea7e))
+- Merge pull request #12 from fabidick22/claude/release-v2-branch-fa2ik ([bd512d6](https://github.com/fabidick22/flux2-ecr-webhook/commit/bd512d6a106e290a86669e94f31ebee107179901)), closes [#12](https://github.com/fabidick22/flux2-ecr-webhook/issues/12)
+
+### Tests
+
+- add unit tests for config, discovery and mapping ([6eedf13](https://github.com/fabidick22/flux2-ecr-webhook/commit/6eedf1371229c71ba55538a0a71bd6ff5936c467))
+
+### BREAKING CHANGE
+
+- v2 introduces a Kubernetes-native controller with auto-discovery, replacing the Terraform-only approach from v1.
+
 # [2.0.0-beta.16](https://github.com/fabidick22/flux2-ecr-webhook/compare/v2.0.0-beta.15...v2.0.0-beta.16) (2026-03-23)
 
 ### Features
