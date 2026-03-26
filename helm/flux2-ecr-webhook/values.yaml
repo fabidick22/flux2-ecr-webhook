@@ -1,0 +1,147 @@
+# -- Number of controller replicas. Use 1 unless leaderElection is enabled.
+replicaCount: 1
+
+image:
+  repository: ghcr.io/fabidick22/flux2-ecr-webhook
+  pullPolicy: IfNotPresent
+  # -- Overrides the image tag. Defaults to the chart's appVersion.
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # -- Create a ServiceAccount for the controller.
+  create: true
+  # -- Annotations added to the ServiceAccount.
+  # Use this to configure IRSA (IAM Roles for Service Accounts):
+  # annotations:
+  #   eks.amazonaws.com/role-arn: arn:aws:iam::123456789012:role/my-role
+  annotations: {}
+  # -- Override the generated ServiceAccount name.
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext:
+  runAsNonRoot: true
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 65532
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 128Mi
+  requests:
+    cpu: 10m
+    memory: 64Mi
+
+# -- Flux configuration.
+flux:
+  # -- Namespace where Flux is installed. The controller will look for
+  # ImageRepository, ImagePolicy and Receiver resources here.
+  namespace: flux-system
+  # -- Base URL of the Flux notification-controller webhook server.
+  # The controller appends Receiver.status.webhookPath to build the full URL.
+  # Example: "https://flux.example.com"
+  # Required: the controller cannot build webhook URLs without this value.
+  webhookBaseURL: ""
+
+# -- Namespace scanning configuration.
+scan:
+  # -- Scan all namespaces for ImageRepository resources. When true,
+  # includeNamespaces is ignored.
+  allNamespaces: true
+  # -- Scan only these namespaces (used when allNamespaces is false).
+  includeNamespaces: []
+  # -- Never scan these namespaces, even when allNamespaces is true.
+  excludeNamespaces:
+    - kube-system
+    - kube-public
+    - kube-node-lease
+
+# -- Controller behaviour.
+controller:
+  # -- How often to resync even without Kubernetes watch events.
+  # Accepts Go duration strings: 5m, 10m, 1h.
+  resyncInterval: 5m
+  # -- Enable leader election. Recommended when replicaCount > 1.
+  leaderElection: false
+
+# -- Cloud provider used by the controller. Currently only "aws" is supported.
+cloudProvider: aws
+
+# -- AWS configuration.
+aws:
+  # -- AWS region where resources are managed (e.g. us-east-1).
+  region: ""
+  # -- IAM Role ARN for IRSA (IAM Roles for Service Accounts).
+  # The controller uses this role to create and manage all AWS resources
+  # (Lambda, SQS, EventBridge, SecretsManager, IAM).
+  #
+  # Cross-account setup (e.g., ECR in a shared account, cluster in a workload account):
+  #   1. Register your EKS cluster's OIDC provider as an IAM Identity Provider
+  #      in the target account (where ECR repos live).
+  #   2. Create an IAM role in the target account with a trust policy for the
+  #      OIDC provider and permissions for IAM, Lambda, SQS, EventBridge,
+  #      SecretsManager, and CloudWatch Logs.
+  #   3. Set irsaRoleArn to the target account role ARN.
+  #   All resources will be created in the target account, and EventBridge will
+  #   natively capture ECR push events without cross-account forwarding.
+  #
+  # Leave empty if using node instance profile or kube2iam.
+  irsaRoleArn: ""
+  # -- When true (default), the controller creates and manages all AWS resources
+  # (Lambda, SQS, EventBridge, SecretsManager, IAM, CloudWatch Log Group).
+  # Set to false when you manage infrastructure externally (e.g. Terraform, CDK).
+  # In that mode the controller only updates the repo-mapping secret and
+  # EventBridge rule filter — all resources must already exist.
+  #
+  # Multi-environment example: deploy with manageInfrastructure=true on one
+  # cluster and manageInfrastructure=false on all others that share the same
+  # AWS resources.
+  manageInfrastructure: true
+  # -- Explicit resource references (used when manageInfrastructure is false).
+  # If empty, the controller discovers resources by tags
+  # (managed-by=flux2-webhook) or falls back to the naming convention.
+  existingResources:
+    # -- SecretsManager secret name that stores the repo mapping.
+    repoMappingSecretName: ""
+    # -- SQS queue name for ECR push events.
+    sqsQueueName: ""
+    # -- EventBridge rule name for ECR push events.
+    eventRuleName: ""
+  resources:
+    lambda:
+      # -- Lambda function name to create/update.
+      name: flux-webhook
+      # -- Lambda runtime. Update when upgrading the Python version.
+      runtime: python3.12
+      # -- Lambda execution timeout in seconds.
+      timeout: 30
+    sqs:
+      # -- SQS queue name for buffering ECR push events.
+      name: flux-webhook-push-events
+    # -- Prefix used for all cloud resource names (IAM, Secrets, EventBridge, etc).
+    # All resources are named {appName}-{suffix} for easy IAM policy scoping.
+    appName: flux-webhook
+
+# -- Annotation key placed on an ImageRepository to exclude it from
+# being managed by the controller. Value must be "true".
+# Example:
+#   annotations:
+#     ecr-webhook.io/skip: "true"
+excludeAnnotation: "ecr-webhook.io/skip"
+
+nodeSelector: {}
+tolerations: []
+affinity: {}

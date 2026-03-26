@@ -1,0 +1,19 @@
+flux2-ecr-webhook v2 controller has been deployed.
+
+The controller will automatically discover Flux resources in:
+  Flux namespace : {{ .Values.flux.namespace }}
+  Scan all NS    : {{ .Values.scan.allNamespaces }}
+{{- if not .Values.scan.allNamespaces }}
+  Include NS     : {{ .Values.scan.includeNamespaces | join ", " | default "(none)" }}
+{{- end }}
+  Exclude NS     : {{ .Values.scan.excludeNamespaces | join ", " | default "(none)" }}
+
+Resync interval  : {{ .Values.controller.resyncInterval }}
+AWS region       : {{ .Values.aws.region | default "(not set — ensure IRSA or instance profile)" }}
+
+To exclude a specific ImageRepository from management, annotate it with:
+  {{ .Values.excludeAnnotation }}: "true"
+
+To check controller status:
+  kubectl -n {{ .Release.Namespace }} get pods -l app.kubernetes.io/name={{ include "flux2-ecr-webhook.name" . }}
+  kubectl -n {{ .Release.Namespace }} logs -l app.kubernetes.io/name={{ include "flux2-ecr-webhook.name" . }} -f

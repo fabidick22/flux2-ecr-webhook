@@ -22,6 +22,9 @@ jobs:
     timeout-minutes: 10
     env:
       DRY_RUN: false
+    outputs:
+      released: ${{ steps.release.outputs.released }}
+      version: ${{ steps.release.outputs.version }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -43,3 +46,63 @@ jobs:
               { "release": "patch", "type": "refactor" },
               { "release": false, "subject": "*\\[skip release\\]*" }
             ]
+
+  docker-publish:
+    name: Publish Docker Image
+    needs: release
+    if: needs.release.outputs.released == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: ./controller
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/flux2-ecr-webhook:${{ needs.release.outputs.version }}
+
+  helm-publish:
+    name: Publish Helm Chart
+    needs: release
+    if: needs.release.outputs.released == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+
+      - name: Update Chart.yaml version
+        run: |
+          VERSION="${{ needs.release.outputs.version }}"
+          sed -i "s/^version:.*/version: ${VERSION}/" helm/flux2-ecr-webhook/Chart.yaml
+          sed -i "s/^appVersion:.*/appVersion: \"${VERSION}\"/" helm/flux2-ecr-webhook/Chart.yaml
+          echo "Chart version set to ${VERSION}"
+          cat helm/flux2-ecr-webhook/Chart.yaml
+
+      - name: Login to GHCR
+        run: echo "${{ github.token }}" | helm registry login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Package and push chart
+        run: |
+          helm package helm/flux2-ecr-webhook
+          helm push flux2-ecr-webhook-*.tgz oci://ghcr.io/${{ github.repository_owner }}/charts
