@@ -1,3 +1,9 @@
+## [2.0.1-beta.1](https://github.com/fabidick22/flux2-ecr-webhook/compare/v2.0.0...v2.0.1-beta.1) (2026-04-09)
+
+### Documentation
+
+- add IAM setup guide and policy example ([b45eb49](https://github.com/fabidick22/flux2-ecr-webhook/commit/b45eb49ea2af3ef431f528fb10a4f6c737aa3c2b))
+
 # [2.0.0](https://github.com/fabidick22/flux2-ecr-webhook/compare/v1.2.0...v2.0.0) (2026-03-26)
 
 ### Bug Fixes
