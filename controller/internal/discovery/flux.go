@@ -79,7 +79,7 @@ func (d *FluxDiscovery) DiscoverForImageRepository(ctx context.Context, repo *im
 
 		webhookURLs := d.buildWebhookURLs(r)
 		if len(webhookURLs) == 0 {
-			logger.Info("Receiver has no status.webhookPath yet (not reconciled by notification-controller?)", "receiver", r.Name)
+			logger.V(1).Info("Receiver has no status.webhookPath yet (not reconciled by notification-controller?)", "receiver", r.Name)
 			continue
 		}
 
