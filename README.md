@@ -149,6 +149,26 @@ helm install flux2-ecr-webhook ./helm/flux2-ecr-webhook \
   --set aws.irsaRoleArn=arn:aws:iam::123456789012:role/my-role
 ```
 
+## AWS IAM Setup
+
+The controller needs an IAM role with permissions to manage Lambda, SQS, EventBridge, SecretsManager, IAM, and CloudWatch Logs. See the full policy example at [`examples/aws/iam-policy.json`](examples/aws/iam-policy.json).
+
+> Replace `<REGION>` and `<ACCOUNT_ID>` with your values.
+
+### Option 1: Same Account
+
+Create an IAM role in the same account where the EKS cluster runs. Attach the policy and configure an OIDC trust relationship for IRSA pointing to the cluster's service account (`flux-system:flux2-ecr-webhook`).
+
+### Option 2: Cross-Account (shared account)
+
+When the cluster runs in one account (e.g. STG) but the cloud resources live in a **shared account**:
+
+1. Create an [OIDC Identity Provider](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_create_oidc.html) in the **shared account** using the EKS OIDC issuer URL from the cluster account
+2. Create the IAM role in the **shared account** with the policy and an OIDC trust relationship pointing to the identity provider created in step 1
+3. Use the shared account role ARN in `aws.irsaRoleArn`
+
+The pod assumes the role directly in the shared account via OIDC federation. Repeat for each cluster that needs access.
+
 ## Exclude a Repository
 
 Add the exclusion annotation to skip a specific ImageRepository:
