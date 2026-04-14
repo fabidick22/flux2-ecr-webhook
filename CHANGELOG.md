@@ -1,3 +1,22 @@
+# [2.1.0](https://github.com/fabidick22/flux2-ecr-webhook/compare/v2.0.0...v2.1.0) (2026-04-14)
+
+### Chores
+
+- **release:** v2.0.1-beta.1 ([2b21e96](https://github.com/fabidick22/flux2-ecr-webhook/commit/2b21e967727395427fe66221ee9b0bd79c2f4d19))
+- **release:** v2.1.0-beta.1 ([92b7033](https://github.com/fabidick22/flux2-ecr-webhook/commit/92b70339a13f6ad026177065685b2981c61ef0c0))
+
+### Documentation
+
+- add IAM setup guide and policy example ([b45eb49](https://github.com/fabidick22/flux2-ecr-webhook/commit/b45eb49ea2af3ef431f528fb10a4f6c737aa3c2b))
+
+### Features
+
+- upgrade Flux API from v1beta2 to v1 ([7f0e578](https://github.com/fabidick22/flux2-ecr-webhook/commit/7f0e5780404a23ba2512955b8bc129ea33b272f5))
+
+### Other
+
+- Merge pull request #17 from fabidick22/beta ([ce887e6](https://github.com/fabidick22/flux2-ecr-webhook/commit/ce887e66b04105d4074b4cf45e2aefa892bf5375)), closes [#17](https://github.com/fabidick22/flux2-ecr-webhook/issues/17)
+
 # [2.1.0-beta.1](https://github.com/fabidick22/flux2-ecr-webhook/compare/v2.0.1-beta.1...v2.1.0-beta.1) (2026-04-14)
 
 ### Features
