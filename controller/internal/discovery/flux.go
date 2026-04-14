@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"strings"
 
-	imagev1beta2 "github.com/fluxcd/image-reflector-controller/api/v1beta2"
+	imagev1 "github.com/fluxcd/image-reflector-controller/api/v1"
 	notificationv1 "github.com/fluxcd/notification-controller/api/v1"
 	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -46,7 +46,7 @@ type FluxDiscovery struct {
 
 // DiscoverForImageRepository returns all ImageInfo entries for the given
 // ImageRepository by cross-referencing its associated Receivers and ImagePolicies.
-func (d *FluxDiscovery) DiscoverForImageRepository(ctx context.Context, repo *imagev1beta2.ImageRepository) ([]ImageInfo, error) {
+func (d *FluxDiscovery) DiscoverForImageRepository(ctx context.Context, repo *imagev1.ImageRepository) ([]ImageInfo, error) {
 	logger := log.FromContext(ctx).WithValues("imageRepo", repo.Name, "namespace", repo.Namespace)
 
 	ecrRepoName, err := extractECRRepoName(repo.Spec.Image)
@@ -79,7 +79,7 @@ func (d *FluxDiscovery) DiscoverForImageRepository(ctx context.Context, repo *im
 
 		webhookURLs := d.buildWebhookURLs(r)
 		if len(webhookURLs) == 0 {
-			logger.Info("Receiver has no status.webhookPath yet (not reconciled by notification-controller?)", "receiver", r.Name)
+			logger.V(1).Info("Receiver has no status.webhookPath yet (not reconciled by notification-controller?)", "receiver", r.Name)
 			continue
 		}
 
@@ -132,14 +132,14 @@ func (d *FluxDiscovery) findReceiversForRepo(ctx context.Context, repoName, repo
 
 // findPoliciesForRepo returns all ImagePolicies that reference the given
 // ImageRepository via spec.imageRepositoryRef.
-func (d *FluxDiscovery) findPoliciesForRepo(ctx context.Context, repoName, repoNamespace string) ([]imagev1beta2.ImagePolicy, error) {
-	list := &imagev1beta2.ImagePolicyList{}
+func (d *FluxDiscovery) findPoliciesForRepo(ctx context.Context, repoName, repoNamespace string) ([]imagev1.ImagePolicy, error) {
+	list := &imagev1.ImagePolicyList{}
 	// Policies are typically in the same namespace as the ImageRepository.
 	if err := d.Client.List(ctx, list, client.InNamespace(repoNamespace)); err != nil {
 		return nil, err
 	}
 
-	var matched []imagev1beta2.ImagePolicy
+	var matched []imagev1.ImagePolicy
 	for _, p := range list.Items {
 		ref := p.Spec.ImageRepositoryRef
 		// ref.Namespace is optional; empty means same namespace as policy.
@@ -182,7 +182,7 @@ func (d *FluxDiscovery) readToken(ctx context.Context, secretName, namespace str
 
 // extractRegex returns the tag filter pattern from the first ImagePolicy
 // that has one defined. Returns empty string when none is found.
-func extractRegex(policies []imagev1beta2.ImagePolicy) string {
+func extractRegex(policies []imagev1.ImagePolicy) string {
 	for _, p := range policies {
 		if p.Spec.FilterTags != nil && p.Spec.FilterTags.Pattern != "" {
 			return p.Spec.FilterTags.Pattern
