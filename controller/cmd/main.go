@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	imagev1beta2 "github.com/fluxcd/image-reflector-controller/api/v1beta2"
+	imagev1 "github.com/fluxcd/image-reflector-controller/api/v1"
 	notificationv1 "github.com/fluxcd/notification-controller/api/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -30,7 +30,7 @@ var (
 
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
-	utilruntime.Must(imagev1beta2.AddToScheme(scheme))
+	utilruntime.Must(imagev1.AddToScheme(scheme))
 	utilruntime.Must(notificationv1.AddToScheme(scheme))
 }
 

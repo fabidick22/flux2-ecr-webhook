@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	imagev1beta2 "github.com/fluxcd/image-reflector-controller/api/v1beta2"
+	imagev1 "github.com/fluxcd/image-reflector-controller/api/v1"
 	notificationv1 "github.com/fluxcd/notification-controller/api/v1"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -118,8 +118,8 @@ func (r *ImageRepositorySyncReconciler) ensureInfraOnce(ctx context.Context) err
 
 // listManagedRepos lists all ImageRepository resources that pass the configured
 // namespace filters and do not carry the exclusion annotation.
-func (r *ImageRepositorySyncReconciler) listManagedRepos(ctx context.Context) ([]imagev1beta2.ImageRepository, error) {
-	list := &imagev1beta2.ImageRepositoryList{}
+func (r *ImageRepositorySyncReconciler) listManagedRepos(ctx context.Context) ([]imagev1.ImageRepository, error) {
+	list := &imagev1.ImageRepositoryList{}
 
 	var opts []client.ListOption
 	if !r.Config.ScanAllNamespaces && len(r.Config.IncludeNamespaces) > 0 {
@@ -136,10 +136,10 @@ func (r *ImageRepositorySyncReconciler) listManagedRepos(ctx context.Context) ([
 }
 
 // listFromNamespaces lists ImageRepositories from specific namespaces only.
-func (r *ImageRepositorySyncReconciler) listFromNamespaces(ctx context.Context, namespaces []string) ([]imagev1beta2.ImageRepository, error) {
-	var all []imagev1beta2.ImageRepository
+func (r *ImageRepositorySyncReconciler) listFromNamespaces(ctx context.Context, namespaces []string) ([]imagev1.ImageRepository, error) {
+	var all []imagev1.ImageRepository
 	for _, ns := range namespaces {
-		list := &imagev1beta2.ImageRepositoryList{}
+		list := &imagev1.ImageRepositoryList{}
 		if err := r.List(ctx, list, client.InNamespace(ns)); err != nil {
 			return nil, err
 		}
@@ -149,13 +149,13 @@ func (r *ImageRepositorySyncReconciler) listFromNamespaces(ctx context.Context, 
 }
 
 // filterRepos removes repositories in excluded namespaces or annotated to skip.
-func (r *ImageRepositorySyncReconciler) filterRepos(repos []imagev1beta2.ImageRepository) []imagev1beta2.ImageRepository {
+func (r *ImageRepositorySyncReconciler) filterRepos(repos []imagev1.ImageRepository) []imagev1.ImageRepository {
 	excluded := make(map[string]bool, len(r.Config.ExcludeNamespaces))
 	for _, ns := range r.Config.ExcludeNamespaces {
 		excluded[ns] = true
 	}
 
-	var result []imagev1beta2.ImageRepository
+	var result []imagev1.ImageRepository
 	for _, repo := range repos {
 		if excluded[repo.Namespace] {
 			continue
@@ -174,7 +174,7 @@ func (r *ImageRepositorySyncReconciler) filterRepos(repos []imagev1beta2.ImageRe
 func (r *ImageRepositorySyncReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		// Primary watch: an ImageRepository change triggers reconciliation directly.
-		For(&imagev1beta2.ImageRepository{}).
+		For(&imagev1.ImageRepository{}).
 		// Secondary watch: when a Receiver changes, re-reconcile all ImageRepositories
 		// it references (webhook URL or token may have changed).
 		Watches(
@@ -184,7 +184,7 @@ func (r *ImageRepositorySyncReconciler) SetupWithManager(mgr ctrl.Manager) error
 		// Secondary watch: when an ImagePolicy changes, re-reconcile the
 		// referenced ImageRepository (regex/tag filter may have changed).
 		Watches(
-			&imagev1beta2.ImagePolicy{},
+			&imagev1.ImagePolicy{},
 			handler.EnqueueRequestsFromMapFunc(r.policyToImageRepo),
 		).
 		Complete(r)
@@ -224,7 +224,7 @@ func (r *ImageRepositorySyncReconciler) receiverToImageRepos(ctx context.Context
 // policyToImageRepo maps an ImagePolicy change to the ImageRepository it
 // references, so that a changed tag filter is picked up immediately.
 func (r *ImageRepositorySyncReconciler) policyToImageRepo(ctx context.Context, obj client.Object) []reconcile.Request {
-	policy, ok := obj.(*imagev1beta2.ImagePolicy)
+	policy, ok := obj.(*imagev1.ImagePolicy)
 	if !ok {
 		return nil
 	}
