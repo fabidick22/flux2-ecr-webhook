@@ -1,3 +1,21 @@
+# [2.2.0](https://github.com/fabidick22/flux2-ecr-webhook/compare/v2.1.0...v2.2.0) (2026-04-14)
+
+### Bug Fixes
+
+- update Dockerfile to Go 1.25 ([7a3bb59](https://github.com/fabidick22/flux2-ecr-webhook/commit/7a3bb59e7a633f7b14bfc60b0ec5405e743c627a))
+
+### Documentation
+
+- add IAM setup guide and policy example ([3e8dda8](https://github.com/fabidick22/flux2-ecr-webhook/commit/3e8dda806d180320e0acb311b44b880a9f193c8f))
+
+### Features
+
+- upgrade Flux API from v1beta2 to v1 ([5ce143c](https://github.com/fabidick22/flux2-ecr-webhook/commit/5ce143c9cba68fac8367571d026751b7abc3e42d))
+
+### Other
+
+- Merge pull request #18 from fabidick22/feat/upgrade-flux-api-v1 ([0884428](https://github.com/fabidick22/flux2-ecr-webhook/commit/0884428f454bb26bdf51ad2fb3444f719feb7ae0)), closes [#18](https://github.com/fabidick22/flux2-ecr-webhook/issues/18)
+
 # [2.1.0](https://github.com/fabidick22/flux2-ecr-webhook/compare/v2.0.0...v2.1.0) (2026-04-14)
 
 ### Chores
