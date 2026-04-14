@@ -1,3 +1,9 @@
+# [2.1.0-beta.1](https://github.com/fabidick22/flux2-ecr-webhook/compare/v2.0.1-beta.1...v2.1.0-beta.1) (2026-04-14)
+
+### Features
+
+- upgrade Flux API from v1beta2 to v1 ([7f0e578](https://github.com/fabidick22/flux2-ecr-webhook/commit/7f0e5780404a23ba2512955b8bc129ea33b272f5))
+
 ## [2.0.1-beta.1](https://github.com/fabidick22/flux2-ecr-webhook/compare/v2.0.0...v2.0.1-beta.1) (2026-04-09)
 
 ### Documentation
