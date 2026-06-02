@@ -1,3 +1,13 @@
+## [2.2.1](https://github.com/fabidick22/flux2-ecr-webhook/compare/v2.2.0...v2.2.1) (2026-06-02)
+
+### Bug Fixes
+
+- prevent OOM by disabling Secret informer cache ([70b0808](https://github.com/fabidick22/flux2-ecr-webhook/commit/70b0808e9eb7631d0d7f8173dddb53fff8b7ef2d))
+
+### Other
+
+- Merge pull request #19 from fabidick22/fix/oom-disable-secret-cache ([184c9f0](https://github.com/fabidick22/flux2-ecr-webhook/commit/184c9f0dc915a7a4ceb939fdc0c3ff6b7714fdaa)), closes [#19](https://github.com/fabidick22/flux2-ecr-webhook/issues/19)
+
 # [2.2.0](https://github.com/fabidick22/flux2-ecr-webhook/compare/v2.1.0...v2.2.0) (2026-04-14)
 
 ### Bug Fixes
