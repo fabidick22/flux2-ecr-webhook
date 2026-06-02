@@ -9,10 +9,12 @@ import (
 
 	imagev1 "github.com/fluxcd/image-reflector-controller/api/v1"
 	notificationv1 "github.com/fluxcd/notification-controller/api/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
@@ -81,15 +83,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
-		Scheme: scheme,
-		Metrics: metricsserver.Options{
-			BindAddress: metricsAddr,
-		},
-		HealthProbeBindAddress: probeAddr,
-		LeaderElection:         leaderElect,
-		LeaderElectionID:       "flux2-ecr-webhook.fabidick22.github.io",
-	})
+	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), managerOptions(metricsAddr, probeAddr, leaderElect))
 	if err != nil {
 		setupLog.Error(err, "unable to start manager")
 		os.Exit(1)
@@ -117,6 +111,31 @@ func main() {
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.Error(err, "problem running manager")
 		os.Exit(1)
+	}
+}
+
+// managerOptions builds the ctrl.Options used to create the controller manager.
+// Extracted from main() so the configuration — especially the cache policy — is
+// unit-testable.
+func managerOptions(metricsAddr, probeAddr string, leaderElect bool) ctrl.Options {
+	return ctrl.Options{
+		Scheme: scheme,
+		Metrics: metricsserver.Options{
+			BindAddress: metricsAddr,
+		},
+		HealthProbeBindAddress: probeAddr,
+		LeaderElection:         leaderElect,
+		LeaderElectionID:       "flux2-ecr-webhook.fabidick22.github.io",
+		// Disable the informer cache for Secrets. The controller only reads
+		// specific secrets referenced by Receiver.Spec.SecretRef (webhook tokens),
+		// but the default cache would create a cluster-wide informer that loads
+		// ALL secrets into memory — including large Helm release secrets — causing
+		// OOM in clusters with many secrets.
+		Client: client.Options{
+			Cache: &client.CacheOptions{
+				DisableFor: []client.Object{&corev1.Secret{}},
+			},
+		},
 	}
 }
 
