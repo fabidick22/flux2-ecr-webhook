@@ -69,7 +69,12 @@ helm install flux2-ecr-webhook ./helm/flux2-ecr-webhook \
 
 ### Multi-Cluster (shared cloud account)
 
-Multiple clusters sharing the same cloud account and resources. Each controller automatically identifies itself using the `webhookBaseURL` hostname — no extra configuration required.
+All clusters share **one set of AWS resources** (SQS, Lambda, EventBridge, SecretsManager) and **one SecretsManager secret** where each controller merges its own entries using a read → merge → write cycle. The `webhookBaseURL` hostname is used as the cluster identity to avoid key collisions.
+
+Key points:
+- **One cluster** must set `manageInfrastructure: true` to create the shared AWS resources (SQS, Lambda, EventBridge, etc.)
+- **All other clusters** must set `manageInfrastructure: false` to avoid conflicts with existing resources
+- All clusters must use the same `appName` so they discover and share the same resources
 
 ```mermaid
 graph TB
@@ -95,46 +100,78 @@ graph TB
   Lambda -->|regex match?| W2[PROD Flux Receiver]
 ```
 
-> Example uses AWS terminology. The concept applies to any supported cloud provider (GCP projects, Azure subscriptions, etc.).
+#### Helm values examples
 
-Each controller uses a **read → merge → write** cycle so entries from other clusters are preserved. The mapping keys are automatically prefixed with the cluster identity:
+Cluster that owns the infrastructure (`manageInfrastructure: true`):
+
+```yaml
+# shared-cluster — creates and manages the AWS resources
+flux:
+  webhookBaseURL: https://gitops.shared-account.com
+  namespace: flux-system
+
+aws:
+  region: us-east-1
+  appName: flux-webhook
+  manageInfrastructure: true
+
+serviceAccount:
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::111111111111:role/flux-webhook-controller-role
+```
+
+Clusters that only sync their mappings (`manageInfrastructure: false`):
+
+```yaml
+# cluster-one — only syncs mapping, does not create AWS resources
+flux:
+  webhookBaseURL: https://gitops.account-one.com
+  namespace: flux-system
+
+aws:
+  region: us-east-1
+  appName: flux-webhook
+  manageInfrastructure: false
+
+serviceAccount:
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::111111111111:role/flux-webhook-controller-role
+```
+
+```yaml
+# cluster-two — only syncs mapping, does not create AWS resources
+flux:
+  webhookBaseURL: https://gitops.account-two.com
+  namespace: flux-system
+
+aws:
+  region: us-east-1
+  appName: flux-webhook
+  manageInfrastructure: false
+
+serviceAccount:
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::111111111111:role/flux-webhook-controller-role
+```
+
+The resulting SecretsManager mapping merges entries from all clusters:
 
 ```json
 {
   "my-app": {
-    "flux.stg.example.com::my-app-receiver": {
-      "webhook": ["https://flux.stg.example.com/hook/abc123"],
-      "token": "stg-token",
-      "regex": "^stg-.*"
+    "gitops.shared-account.com::my-app-receiver": {
+      "webhook": ["https://gitops.shared-account.com/hook/abc123"],
+      "token": "shared-token",
+      "regex": "^main-.*"
     },
-    "flux.prod.example.com::my-app-receiver": {
-      "webhook": ["https://flux.prod.example.com/hook/xyz789"],
-      "token": "prod-token",
-      "regex": "^prod-.*"
+    "gitops.account-one.com::my-app-receiver": {
+      "webhook": ["https://gitops.account-one.com/hook/def456"],
+      "token": "one-token",
+      "regex": "^stg-.*"
     }
   }
 }
 ```
-
-Install on each cluster — only `webhookBaseURL` and `irsaRoleArn` differ:
-
-```bash
-# STG cluster
-helm install flux2-ecr-webhook ./helm/flux2-ecr-webhook \
-  --namespace flux-system \
-  --set flux.webhookBaseURL=https://flux.stg.example.com \
-  --set aws.region=us-east-1 \
-  --set aws.irsaRoleArn=arn:aws:iam::123456789012:role/stg-role
-
-# PROD cluster
-helm install flux2-ecr-webhook ./helm/flux2-ecr-webhook \
-  --namespace flux-system \
-  --set flux.webhookBaseURL=https://flux.prod.example.com \
-  --set aws.region=us-east-1 \
-  --set aws.irsaRoleArn=arn:aws:iam::123456789012:role/prod-role
-```
-
-If you ever reach the secret size limit (64 KB, unlikely for most setups), use `aws.appName` to create a separate set of cloud resources for additional clusters.
 
 ### External Infrastructure
 
