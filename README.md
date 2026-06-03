@@ -12,12 +12,13 @@ graph LR
     C[Controller] -->|watches| IR[ImageRepository]
     C -->|discovers| IP[ImagePolicy]
     C -->|discovers| R[Receiver]
+    ING[Ingress] -->|routes to| R
   end
   C -->|sync mapping| SS[Secret Store]
   REG[Container Registry] -->|push event| EV[Cloud Events]
   EV --> Q[Queue] --> FN[Serverless Function]
   FN -->|reads mapping| SS
-  FN -->|POST webhook| R
+  FN -->|POST webhook| ING
 ```
 
 > **AWS:** ECR → EventBridge → SQS → Lambda → SecretsManager
