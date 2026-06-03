@@ -1,3 +1,13 @@
+## [2.2.4](https://github.com/fabidick22/flux2-ecr-webhook/compare/v2.2.3...v2.2.4) (2026-06-03)
+
+### Documentation
+
+- improve project description in README ([a297a53](https://github.com/fabidick22/flux2-ecr-webhook/commit/a297a53192aa95eba9aed2aafd266bda0ff05219))
+
+### Other
+
+- Merge pull request #22 from fabidick22/docs/improve-project-description ([bd80543](https://github.com/fabidick22/flux2-ecr-webhook/commit/bd80543af64d0a3da836fd5390e4e0152bc16d00)), closes [#22](https://github.com/fabidick22/flux2-ecr-webhook/issues/22)
+
 ## [2.2.3](https://github.com/fabidick22/flux2-ecr-webhook/compare/v2.2.2...v2.2.3) (2026-06-03)
 
 ### Documentation
