@@ -1,6 +1,6 @@
 # flux2-ecr-webhook
 
-Automates calling Flux webhooks ([Receivers](https://fluxcd.io/flux/components/notification/receiver/)) when container registry push events occur.
+A Kubernetes controller that triggers [Flux CD](https://fluxcd.io/) reconciliation in seconds after a container image push, instead of waiting for the default polling interval. It automatically discovers Flux resources ([ImageRepository](https://fluxcd.io/flux/components/image/imagerepositories/), [ImagePolicy](https://fluxcd.io/flux/components/image/imagepolicies/), [Receivers](https://fluxcd.io/flux/components/notification/receiver/)) and wires cloud-native push events to Flux webhooks — no manual mapping or Terraform required.
 
 > Cloud-agnostic design ([CloudProvider interface](controller/internal/cloud/provider.go)). Currently implemented and tested on **AWS** (ECR + EventBridge + SQS + Lambda).
 
