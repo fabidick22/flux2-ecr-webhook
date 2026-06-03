@@ -1,3 +1,13 @@
+## [2.2.3](https://github.com/fabidick22/flux2-ecr-webhook/compare/v2.2.2...v2.2.3) (2026-06-03)
+
+### Documentation
+
+- fix diagram to reflect webhook routing through Ingress ([df5bcd6](https://github.com/fabidick22/flux2-ecr-webhook/commit/df5bcd679838429142a5e1b2c91092eecd0bd2fd))
+
+### Other
+
+- Merge pull request #21 from fabidick22/docs/improve-readme-multi-cluster ([b3fb2a9](https://github.com/fabidick22/flux2-ecr-webhook/commit/b3fb2a9f96bb819b1cb7c12642ed95284c75a90f)), closes [#21](https://github.com/fabidick22/flux2-ecr-webhook/issues/21)
+
 ## [2.2.2](https://github.com/fabidick22/flux2-ecr-webhook/compare/v2.2.1...v2.2.2) (2026-06-03)
 
 ### Documentation
