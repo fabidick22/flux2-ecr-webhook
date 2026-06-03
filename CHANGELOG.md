@@ -1,3 +1,13 @@
+## [2.2.2](https://github.com/fabidick22/flux2-ecr-webhook/compare/v2.2.1...v2.2.2) (2026-06-03)
+
+### Documentation
+
+- improve multi-cluster setup with helm examples ([71ecd0a](https://github.com/fabidick22/flux2-ecr-webhook/commit/71ecd0a4fa5023cf86ca5b4859d0b0f1ebc3405b))
+
+### Other
+
+- Merge pull request #20 from fabidick22/docs/multi-cluster-helm-examples ([eccf362](https://github.com/fabidick22/flux2-ecr-webhook/commit/eccf3621b96df56cca10414c75c31cccdc6c1826)), closes [#20](https://github.com/fabidick22/flux2-ecr-webhook/issues/20)
+
 ## [2.2.1](https://github.com/fabidick22/flux2-ecr-webhook/compare/v2.2.0...v2.2.1) (2026-06-02)
 
 ### Bug Fixes
